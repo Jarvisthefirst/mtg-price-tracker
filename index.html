@@ -194,24 +194,21 @@ label{display:block;font-size:0.78rem;color:#888;margin-bottom:0.25rem}
 </div>
 
 <div id="modal-edit-pf" class="modal-overlay hidden" onclick="closeModal(event,this)">
-  <div class="modal" style="min-width:480px" onclick="event.stopPropagation()">
+  <div class="modal" style="min-width:520px" onclick="event.stopPropagation()">
     <h2 id="epTitle">✏️ Edit Portfolio</h2>
     <div><label>Description</label><input id="epDesc" placeholder="Description" onchange="savePfDesc()"></div>
+    <div class="mt">
+      <div class="gap" style="justify-content:space-between;align-items:baseline">
+        <h3 style="color:#ffd93d;font-size:0.9rem">📈 Portfolio Value Over Time</h3>
+        <span id="pvStats" class="muted"></span>
+      </div>
+      <div class="chart-wrap" style="max-width:100%"><canvas id="pvChart" height="180"></canvas></div>
+      <div id="pvEmpty" class="empty-box hidden"><div class="big" style="font-size:1.5rem">📈</div><p>Add products with price history to see value trends.</p></div>
+    </div>
     <div class="mt"><label>Products</label><div id="epProducts"></div></div>
     <div class="gap mt">
       <div class="datalist-wrap" style="flex:1">
-        <input id="epAddInput" placeholder="Type to search products..." oninput="onSuggest(event,'epAddInput','epAddSuggestions')" onfocus="onSuggest(event,'epAddInput','epAddSuggestions')">
-        <div class="suggestions" id="epAddSuggestions"></div>
-      </div>
-      <input id="epAddQty" type="number" value="1" min="1" style="width:60px" placeholder="Qty">
-      <button class="btn btn-success btn-sm" onclick="epAddProduct()">+ Add</button>
-    </div>
-    <div class="gap g">
-      <button class="btn btn-outline" onclick="closeModalById('modal-edit-pf')">Close</button>
-      <button class="btn btn-danger btn-sm" onclick="deletePf()">🗑️ Delete</button>
-    </div>
-  </div>
-</div>
+        <input id="epAddInput" placeholder="Search and select a product...
 
 <script>
 // ═══════════════════════════════════════════════════════════
@@ -310,25 +307,58 @@ document.querySelectorAll('[data-tab]').forEach(b => {
 function onSuggest(evt, inputId, suggestId) {
   const inp = document.getElementById(inputId);
   const sug = document.getElementById(suggestId);
+  if (!inp || !sug) return;
   const q = inp.value.toLowerCase().trim();
   const prods = getProducts().filter(p => !q || p.name.toLowerCase().includes(q));
+  if (!prods.length || inputId === 'epAddInput') {
+    // For portfolio add, MUST pick from suggestions — clear any stale selection
+    if (inputId === 'epAddInput' && q && !prods.length) {
+      inp.dataset.selectedId = '';
+      inp.dataset.selectedName = '';
+    }
+  }
   if (!prods.length) { sug.style.display = 'none'; return; }
   sug.innerHTML = prods.slice(0, 10).map((p, i) =>
     `<div data-id="${p.id}" data-name="${esc(p.name)}" class="${i===0?'highlight':''}"
       onclick="selectSuggest('${inputId}','${suggestId}',${p.id},'${esc(p.name)}')">${esc(p.name).replace(new RegExp(esc(q),'gi'), m => '<span style="color:#00d4aa">'+m+'</span>')}</div>`
   ).join('');
   sug.style.display = 'block';
-  // Keyboard navigation
-  if (evt && evt.key === 'ArrowDown') { evt.preventDefault(); moveHighlight(suggestId, 1); }
-  if (evt && evt.key === 'ArrowUp') { evt.preventDefault(); moveHighlight(suggestId, -1); }
-  if (evt && evt.key === 'Enter') {
-    evt.preventDefault();
-    const hl = sug.querySelector('.highlight');
-    if (hl) { hl.click(); }
-    else { sug.style.display = 'none'; }
-  }
-  if (evt && evt.key === 'Escape') { sug.style.display = 'none'; }
 }
+
+// Global keydown for autocomplete inputs
+['epAddInput'].forEach(id => {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.addEventListener('keydown', function(e) {
+    const suggestId = id === 'epAddInput' ? 'epAddSuggestions' : id.replace('Input', 'Suggestions');
+    const sug = document.getElementById(suggestId);
+    if (!sug || sug.style.display === 'none') {
+      if (e.key === 'Enter') {
+        // If no suggestions visible and they pressed Enter with text, try to match
+        onSuggest(e, id, suggestId);
+      }
+      return;
+    }
+    if (e.key === 'ArrowDown') { e.preventDefault(); moveHighlight(suggestId, 1); }
+    else if (e.key === 'ArrowUp') { e.preventDefault(); moveHighlight(suggestId, -1); }
+    else if (e.key === 'Enter') {
+      e.preventDefault();
+      const hl = sug.querySelector('.highlight');
+      if (hl) { hl.click(); }
+      else { sug.style.display = 'none'; }
+    }
+    else if (e.key === 'Escape') { sug.style.display = 'none'; }
+  });
+  el.addEventListener('blur', function() {
+    // On blur, if no product was selected, clear the field and selection
+    setTimeout(() => {
+      if (!el.dataset.selectedId) {
+        el.value = '';
+      }
+    }, 200);
+  });
+});
+
 function moveHighlight(suggestId, dir) {
   const sug = document.getElementById(suggestId);
   const items = sug.querySelectorAll('div');
@@ -515,6 +545,7 @@ function editPf(idx) {
   document.getElementById('epAddSuggestions').style.display = 'none';
   document.getElementById('epAddQty').value = 1;
   renderEpProducts(pf);
+  renderPvChart(pf);
   setTimeout(() => onSuggest({}, 'epAddInput', 'epAddSuggestions'), 100);
   document.getElementById('modal-edit-pf').classList.remove('hidden');
 }
@@ -522,10 +553,13 @@ function editPf(idx) {
 function renderEpProducts(pf) {
   const el = document.getElementById('epProducts');
   if (!pf.products.length) { el.innerHTML = '<p class="muted">No products yet. Search and add some!</p>'; return; }
+  const allProds = getProducts();
+  let totalVal = 0, withPrice = 0;
   el.innerHTML = `<table><thead><tr><th>Product</th><th>Qty</th><th>Subtotal</th><th></th></tr></thead><tbody>
     ${pf.products.map((p, i) => {
-      const prod = getProducts().find(x => x.name === p.name);
+      const prod = allProds.find(x => x.name === p.name);
       const sub = prod && prod.latest != null ? prod.latest * (p.qty || 1) : null;
+      if (sub != null) { totalVal += sub; withPrice++; }
       return `<tr>
         <td>${esc(p.name)}</td>
         <td><input type="number" value="${p.qty || 1}" min="0" step="1" style="width:55px" onchange="epUpdateQty(${i}, this.value)"></td>
@@ -534,6 +568,8 @@ function renderEpProducts(pf) {
       </tr>`;
     }).join('')}
   </tbody></table>`;
+  // Re-render chart after products change
+  renderPvChart(pf);
 }
 
 function epUpdateQty(idx, val) {
@@ -560,16 +596,17 @@ function epAddProduct() {
   const ixf = parseInt(document.getElementById('modal-edit-pf').dataset.idx);
   const pf = data.portfolios[ixf];
   if (!pf) return;
-  let name = document.getElementById('epAddInput').dataset.selectedName || document.getElementById('epAddInput').value.trim();
-  const qty = parseInt(document.getElementById('epAddQty').value) || 1;
-  if (!name) { toast('Type a product name', true); return; }
-  // Find product by name (exact or partial)
-  let prod = Object.entries(data.products).find(([id, p]) => p.name.toLowerCase() === name.toLowerCase());
-  if (!prod) {
-    prod = Object.entries(data.products).find(([id, p]) => p.name.toLowerCase().includes(name.toLowerCase()));
-    if (prod) name = prod[1].name;
+  const selectedId = document.getElementById('epAddInput').dataset.selectedId;
+  const selectedName = document.getElementById('epAddInput').dataset.selectedName;
+  if (!selectedId) {
+    toast('👆 Select a product from the suggestions (type to search)', true);
+    return;
   }
-  if (!prod) { toast('"' + name + '" not found. Go to Products tab to add it first.', true); return; }
+  const prodId = parseInt(selectedId);
+  const prod = data.products[prodId];
+  if (!prod) { toast('Product not found', true); return; }
+  const qty = parseInt(document.getElementById('epAddQty').value) || 1;
+  const name = prod.name;
   const exist = pf.products.find(p => p.name === name);
   if (exist) { exist.qty += qty; }
   else { pf.products.push({ name, qty }); }
@@ -598,6 +635,136 @@ function deletePf() {
   closeModalById('modal-edit-pf');
   toast('🗑️ Deleted portfolio');
   refreshAll();
+}
+
+function renderPvChart(pf) {
+  const allProds = getProducts();
+  const resolved = pf.products.map(pc => {
+    const prod = allProds.find(p => p.name === pc.name);
+    return prod ? { ...prod, qty: pc.qty || 1 } : null;
+  }).filter(Boolean);
+
+  const canvas = document.getElementById('pvChart');
+  const emptyEl = document.getElementById('pvEmpty');
+  const statsEl = document.getElementById('pvStats');
+
+  if (!resolved.length) {
+    canvas.style.display = 'none';
+    emptyEl.classList.remove('hidden');
+    emptyEl.querySelector('p').textContent = 'Add products with price history to see value trends.';
+    statsEl.textContent = '';
+    if (charts.pv) { charts.pv.destroy(); charts.pv = null; }
+    return;
+  }
+
+  // Collect all price snapshots across products
+  const series = resolved.map(r => ({
+    name: r.name,
+    qty: r.qty,
+    data: (data.snapshots[r.id] || []).filter(s => s.avg != null).map(s => ({ date: s.date, avg: s.avg * r.qty }))
+  }));
+
+  // Get all dates that have data across all products
+  const dateMap = {};
+  series.forEach(s => {
+    s.data.forEach(d => { dateMap[d.date] = dateMap[d.date] || {}; });
+  });
+  const allDates = Object.keys(dateMap).sort();
+
+  if (!allDates.length) {
+    canvas.style.display = 'none';
+    emptyEl.classList.remove('hidden');
+    emptyEl.querySelector('p').textContent = 'No price history yet. Set some prices first!';
+    statsEl.textContent = '';
+    if (charts.pv) { charts.pv.destroy(); charts.pv = null; }
+    return;
+  }
+
+  canvas.style.display = 'block';
+  emptyEl.classList.add('hidden');
+
+  // Build value-over-time series for each product (weighted by qty)
+  const prodTotals = series.map(s => {
+    const sorted = s.data.sort((a,b) => a.date.localeCompare(b.date));
+    const values = allDates.map(d => {
+      const match = sorted.find(x => x.date === d);
+      if (match) return match.avg;
+      // Use last known value
+      const prev = [...sorted].reverse().find(x => x.date < d);
+      return prev ? prev.avg : 0;
+    });
+    return { name: s.name, values };
+  });
+
+  // Total portfolio value per date
+  const totals = allDates.map((_, i) => prodTotals.reduce((s, pt) => s + (pt.values[i] || 0), 0));
+
+  const latestVal = totals[totals.length - 1] || 0;
+  const firstVal = totals[0] || 0;
+  const change = firstVal > 0 ? ((latestVal - firstVal) / firstVal * 100) : null;
+  statsEl.innerHTML = 'Value: <strong>' + fmt(latestVal) + '</strong>' +
+    (change != null ? ' <span class="' + (change >= 0 ? 'up' : 'down') + '">' + (change > 0 ? '+' : '') + change.toFixed(1) + '%</span> all-time' : '');
+
+  // Color palette for individual lines
+  const colors = ['#00d4aa','#ff6b6b','#ffd93d','#6c5ce7','#00b894','#e17055','#0984e3','#fdcb6e'];
+
+  const ctx = canvas.getContext('2d');
+  if (charts.pv) charts.pv.destroy();
+
+  // Build per-product datasets for the chart
+  const datasets = prodTotals.map((pt, i) => ({
+    label: pt.name + (resolved[i].qty > 1 ? ' ×' + resolved[i].qty : ''),
+    data: pt.values,
+    borderColor: colors[i % colors.length],
+    backgroundColor: colors[i % colors.length] + '15',
+    fill: false,
+    tension: 0.3,
+    pointRadius: 0,
+    borderWidth: 1.5,
+  }));
+
+  // Highlight top product by snapping to max values
+  const maxVals = allDates.map((_, i) => Math.max(...prodTotals.map(pt => pt.values[i] || 0), 0));
+
+  // Add total as main line
+  datasets.push({
+    label: '💶 Total',
+    data: totals,
+    borderColor: '#ffd93d',
+    backgroundColor: 'rgba(255,217,61,0.08)',
+    fill: true,
+    tension: 0.3,
+    pointRadius: 0,
+    borderWidth: 2.5,
+  });
+
+  charts.pv = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: allDates,
+      datasets,
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          display: datasets.length > 1,
+          labels: { color: '#888', font: { size: 10 }, boxWidth: 12, padding: 8 }
+        }
+      },
+      scales: {
+        x: {
+          ticks: { color: '#888', font: { size: 9 }, maxTicksLimit: 12, maxRotation: 20 },
+          grid: { display: false }
+        },
+        y: {
+          ticks: { color: '#888', font: { size: 9 }, callback: v => '€' + v.toFixed(0) },
+          grid: { color: '#1e1e30' }
+        }
+      }
+    }
+  });
 }
 
 // ═══════════════════════════════════════════════════════════

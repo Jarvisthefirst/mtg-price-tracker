@@ -148,14 +148,9 @@ def resolve_product(db: PriceDB, ident: str) -> dict | None:
 
 def cmd_demo(_args):
     """Seed the DB with 91 days of realistic demo data (no API needed)."""
-    import subprocess, sys
-    seed = SCRIPT_DIR / "seed_demo.py"
-    if not seed.exists():
-        print("❌ seed_demo.py not found.")
-        return
-    r = subprocess.run([sys.executable, str(seed)], capture_output=True, text=True)
-    print(r.stdout, end="")
-    print("   Run: python tracker.py list\n" if r.returncode == 0 else f"❌ {r.stderr}")
+    from seed_demo import seed_demo
+    seed_demo(get_db())
+    print("   Run: python tracker.py list\n")
 
 
 def cmd_setup(_args):

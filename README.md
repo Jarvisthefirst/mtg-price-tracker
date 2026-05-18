@@ -1,105 +1,93 @@
 # MTG Price Tracker 📊
 
-Track the price development of Magic: The Gathering booster displays on Cardmarket — with portfolio grouping and self-contained HTML reports.
+**Track, visualize, and export your MTG booster display portfolio — in your browser.**
 
-## Quick Start
+- 🖱️ **Click, don't type** — full web UI at `http://localhost:8080`
+- 📦 **Quantity support** — own 3 boxes of MH3 and 2 of Commander Masters? Just say so
+- 📄 **Self-contained HTML reports** — open in any browser, no server needed
+- 🌐 **Live prices** via Cardmarket API (optional), or enter prices manually
 
+## One-Click Start
+
+### Mac / Linux
 ```bash
-# 1. Install
-pip install -r requirements.txt requests-oauthlib matplotlib
-
-# 2. Seed demo data (try it immediately)
-python tracker.py demo
-python tracker.py list
-
-# 3. View a portfolio
-python tracker.py portfolio "Premium"
-
-# 4. Generate a self-contained HTML report
-python tracker.py portfolio report "Premium" --out premium_report.html
-# → Open premium_report.html in any browser
+git clone https://github.com/Jarvisthefirst/mtg-price-tracker.git
+cd mtg-price-tracker
+bash start.sh
 ```
 
-## All Commands
-
-| Command | What it does |
-|---------|-------------|
-| `demo` | Seed 91 days of realistic demo data |
-| `list` | Latest prices — all products |
-| `info <name>` | Detailed price history |
-| `chart <name>` | Generate a price chart (PNG) |
-| `add <name> <url/id>` | Add a product to track |
-| `remove <name>` | Remove a product |
-| `price <name> <€>` | Manually record a price |
-| `export [file.csv]` | Export all history as CSV |
-| `check` | Fetch live prices from the API |
-| `setup` | Enter Cardmarket API credentials |
-| `verify` | Test API credentials |
-| `find <query>` | Search Cardmarket for IDs |
-
-## Portfolios 📂
-
-Group products into portfolios to see **combined price development**:
-
+### Windows
 ```bash
-# Create a portfolio
-python tracker.py portfolio create "My Collection" \
-  "Modern Horizons 2" "Commander Masters" "Ravnica Remastered"
-
-# Console summary
-python tracker.py portfolio "My Collection"
-
-# Add/remove products
-python tracker.py portfolio add "My Collection" "MH3"
-python tracker.py portfolio remove "My Collection" "Ravnica"
-
-# Generate a self-contained HTML report (with inline chart!)
-python tracker.py portfolio report "Premium" \
-  --out premium_report.html --days 90
+git clone https://github.com/Jarvisthefirst/mtg-price-tracker.git
+cd mtg-price-tracker
+double-click start.bat
 ```
 
-The HTML report is a single file with:
-- Embedded base64 chart (no server needed)
-- Product cards with 90d history
-- Combined portfolio value chart
-- Summary stats & CSV data
+**That's it.** The script creates a virtualenv, installs dependencies, seeds demo data, and opens the browser.
 
-### Pre-built portfolios
+## What It Looks Like
 
-| Portfolio | Products | Description |
-|-----------|----------|-------------|
-| **Premium** | Commander Masters, Double Masters 2022 | High-end reprint sets |
-| **Modern Horizons** | MH3, MH2 | Horizontal cycle evolution |
-| **Standard Rotating** | Bloomburrow, Tarkir: Dragonstorm | Recent standard sets |
+| Tab | What you can do |
+|-----|----------------|
+| **Dashboard** | See all prices, bar chart overview |
+| **Products** | Add/remove products, view price charts, set manual prices |
+| **Portfolios** | Create named groups, add products with quantities, edit inline |
+| **Report** | Download a self-contained HTML report with charts |
 
-## Live Prices
+## Browser Features
 
-The Cardmarket API is free but requires one-time setup:
+- **Drag-and-drop portfolio editing** — add/remove products, set quantities, all in the browser
+- **Charts** powered by Chart.js
+- **One-click HTML report download** — fully self-contained file with base64 charts
+- **CSV export** for spreadsheets
+- **Manual price entry** when you don't have API access
 
-1. Go to [cardmarket.com/en/Developer](https://www.cardmarket.com/en/Developer)
-2. Create an application → get 4 credentials
-3. `python tracker.py setup` → paste them in
-4. `python tracker.py verify` → confirm it works
-5. `python tracker.py check` → fetch live prices
+## Example: Portfolio with Quantities
 
-Without the API, you can still manually enter prices:
+1. Open `http://localhost:8080`
+2. Go to **Portfolios** → **Create** → name it "My Collection"
+3. Click the portfolio card to edit
+4. Select a product from the dropdown, set quantity, click **Add**
+5. Repeat: add MH3×3, Ravnica Remastered×2, Bloomburrow×1
+6. Go to **Report**, pick your portfolio, click **Download HTML Report**
+7. Open the downloaded file — it has charts, summaries, and per-product detail cards
+
+## Live Prices via Cardmarket API (Optional)
+
+1. Register at https://www.cardmarket.com/en/Developer
+2. Create an application → get 4 API credentials
+3. In terminal: `python3 tracker.py setup`
+4. `python3 tracker.py verify` → confirm it works
+5. `python3 tracker.py check` → fetch live prices
+
+Without the API you can enter prices manually in the browser UI.
+
+## CLI Commands (Still Available)
+
 ```bash
-python tracker.py price "MH3 Play Box" 198
+python3 tracker.py demo                      # Seed demo data
+python3 tracker.py list                      # Show all prices
+python3 tracker.py portfolio "My Collection" # Console summary
+python3 tracker.py portfolio report "Premium" --out report.html
+python3 tracker.py export data.csv
+python3 tracker.py price "MH3" 195.50
 ```
 
-## Project Files
+## Project Structure
 
 ```
 mtg-price-tracker/
-├── tracker.py          # Main CLI (368 lines)
-├── database.py         # SQLite storage
-├── api.py              # Cardmarket API client
-├── reporter.py         # Table formatting, charts
-├── portfolio.py        # Portfolio management + HTML reports
-├── seed_demo.py        # Demo data generator
-├── products.json       # Tracked products
-├── portfolios.json     # Portfolio groups
-├── config.json         # API credentials
-├── price_history.db    # SQLite database (auto-created)
-└── README.md           # This file
+├── start.sh / start.bat   # One-click launcher
+├── web_app.py             # Flask web server
+├── index.html             # Browser UI (single page app)
+├── tracker.py             # CLI interface
+├── database.py            # SQLite storage
+├── portfolio.py           # Portfolio management + HTML reports
+├── reporter.py            # Tables, charts, CSV export
+├── api.py                 # Cardmarket API client (optional)
+├── seed_demo.py           # Demo data generator
+├── products.json          # Tracked product metadata
+├── portfolios.json        # Portfolio definitions
+├── config.json            # API credentials
+└── requirements.txt       # Python dependencies
 ```

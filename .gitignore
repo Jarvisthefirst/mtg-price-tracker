@@ -5,7 +5,3 @@ __pycache__/
 *.csv
 config.json
 .DS_Store
-
-# HTML report output files (not the web UI)
-/report_*.html
-/portfolio_*.html

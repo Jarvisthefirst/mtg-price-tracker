@@ -6,94 +6,55 @@
 <title>MTG Price Tracker</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
 <style>
-* { margin:0; padding:0; box-sizing:border-box; }
-body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
-       background:#0f0f1a; color:#e0e0e0; min-height:100vh; }
-
-/* Top bar */
-.topbar { background:#1a1a2e; padding:0.8rem 1.5rem; display:flex; align-items:center;
-          gap:2rem; border-bottom:1px solid #2d2d44; position:sticky; top:0; z-index:100; }
-.topbar h1 { font-size:1.2rem; color:#00d4aa; white-space:nowrap; }
-.topbar nav { display:flex; gap:0.5rem; flex-wrap:wrap; }
-.topbar nav button { background:transparent; border:1px solid #2d2d44; color:#888; padding:0.4rem 1rem;
-                     border-radius:8px; cursor:pointer; font-size:0.85rem; }
-.topbar nav button:hover { border-color:#00d4aa; color:#00d4aa; }
-.topbar nav button.active { background:#00d4aa; color:#0f0f1a; border-color:#00d4aa; font-weight:600; }
-
-/* Content */
-.container { max-width:1100px; margin:0 auto; padding:1.5rem; }
-.hidden { display:none !important; }
-
-/* Cards */
-.card { background:#1a1a2e; border-radius:12px; padding:1.2rem; margin-bottom:1rem; }
-.card h3 { color:#ffd93d; margin-bottom:0.5rem; }
-
-/* Grid */
-.row { display:flex; gap:1rem; flex-wrap:wrap; }
-.col { flex:1; min-width:280px; }
-
-/* Tables */
-table { width:100%; border-collapse:collapse; margin:0.5rem 0; }
-th { text-align:left; padding:0.5rem 0.6rem; background:#16213e;
-     font-size:0.75rem; text-transform:uppercase; letter-spacing:0.5px; color:#888; border-bottom:2px solid #2d2d44; }
-td { padding:0.5rem 0.6rem; border-bottom:1px solid #1e1e30; font-size:0.9rem; }
-tr:hover td { background:#16213e; }
-tr.selected td { background:#1a2a3e; }
-
-/* Buttons */
-.btn { display:inline-block; padding:0.4rem 1rem; border-radius:8px; border:none;
-       cursor:pointer; font-size:0.85rem; font-weight:500; transition:.15s; }
-.btn-sm { padding:0.3rem 0.7rem; font-size:0.8rem; }
-.btn-primary { background:#00d4aa; color:#0f0f1a; }
-.btn-primary:hover { background:#00e6b5; }
-.btn-danger { background:#ff6b6b; color:white; }
-.btn-danger:hover { background:#ff5252; }
-.btn-outline { background:transparent; border:1px solid #2d2d44; color:#888; }
-.btn-outline:hover { border-color:#00d4aa; color:#00d4aa; }
-.btn-success { background:#00b894; color:white; }
-.btn-group { display:flex; gap:0.4rem; flex-wrap:wrap; align-items:center; }
-
-/* Inputs */
-input, select { background:#16213e; border:1px solid #2d2d44; color:#e0e0e0;
-               padding:0.4rem 0.7rem; border-radius:6px; font-size:0.9rem; width:100%; }
-input:focus { border-color:#00d4aa; outline:none; }
-label { display:block; font-size:0.8rem; color:#888; margin-bottom:0.3rem; }
-.flex { display:flex; gap:0.5rem; align-items:center; flex-wrap:wrap; }
-.mt { margin-top:1rem; }
-.mb { margin-bottom:1rem; }
-.text-right { text-align:right; }
-.up { color:#00d4aa; }
-.down { color:#ff6b6b; }
-.muted { color:#888; font-size:0.85rem; }
-
-/* Modal */
-.modal-backdrop { position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:200;
-                  display:flex; align-items:center; justify-content:center; }
-.modal { background:#1a1a2e; border-radius:12px; padding:1.5rem; min-width:380px;
-         max-width:500px; width:90%; max-height:80vh; overflow-y:auto; }
-.modal h2 { color:#00d4aa; margin-bottom:1rem; }
-.modal .btn-group { margin-top:1rem; justify-content:flex-end; }
-
-/* Badge */
-.badge { display:inline-block; background:#2d2d44; border-radius:4px; padding:0.1rem 0.4rem;
-         font-size:0.7rem; color:#888; margin-left:0.3rem; }
-
-/* Alert */
-.alert { background:#2d2d44; border-left:3px solid #ffd93d; padding:0.6rem 1rem;
-         border-radius:6px; margin-bottom:0.8rem; font-size:0.85rem; }
-.alert-success { border-color:#00d4aa; }
-.alert-error { border-color:#ff6b6b; }
-
-/* Chart container */
-.chart-wrap { width:100%; max-width:700px; margin:1rem auto; }
-
-/* Scrollable table */
-.scroll { overflow-x:auto; }
-
-/* Quantity badge in portfolio */
-.qty-badge { display:inline-flex; align-items:center; justify-content:center;
-             background:#00d4aa20; color:#00d4aa; border-radius:20px;
-             min-width:28px; height:28px; font-size:0.8rem; font-weight:700; }
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#0f0f1a;color:#e0e0e0;min-height:100vh;overflow-x:hidden}
+.topbar{background:#1a1a2e;padding:0.7rem 1.2rem;display:flex;align-items:center;gap:1.2rem;position:sticky;top:0;z-index:100;border-bottom:1px solid #2d2d44;flex-wrap:wrap}
+.topbar h1{font-size:1.1rem;color:#00d4aa;white-space:nowrap}
+.topbar nav{display:flex;gap:4px;flex-wrap:wrap}
+.topbar nav button{background:transparent;border:1px solid #2d2d44;color:#888;padding:0.35rem 0.9rem;border-radius:8px;cursor:pointer;font-size:0.82rem;transition:0.15s}
+.topbar nav button:hover{border-color:#00d4aa;color:#00d4aa}
+.topbar nav button.active{background:#00d4aa;color:#0f0f1a;border-color:#00d4aa;font-weight:600}
+.container{max-width:1100px;margin:0 auto;padding:1.2rem}
+.hidden{display:none!important}
+.card{background:#1a1a2e;border-radius:12px;padding:1.1rem;margin-bottom:1rem;border:1px solid transparent}
+.card:hover{border-color:#2d2d44}
+.card h3{color:#ffd93d;margin-bottom:0.6rem;font-size:1rem}
+.row{display:flex;gap:1rem;flex-wrap:wrap}
+.col{flex:1;min-width:280px}
+table{width:100%;border-collapse:collapse;margin:0.4rem 0}
+th{text-align:left;padding:0.45rem 0.5rem;background:#16213e;font-size:0.72rem;text-transform:uppercase;letter-spacing:0.5px;color:#888;border-bottom:2px solid #2d2d44}
+td{padding:0.45rem 0.5rem;border-bottom:1px solid #1e1e30;font-size:0.88rem}
+tr:hover td{background:#16213e}
+.btn{display:inline-flex;align-items:center;padding:0.38rem 1rem;border-radius:8px;border:none;cursor:pointer;font-size:0.84rem;font-weight:500;transition:0.15s;gap:4px}
+.btn-sm{padding:0.28rem 0.65rem;font-size:0.78rem}
+.btn-primary{background:#00d4aa;color:#0f0f1a}
+.btn-primary:hover{background:#00e6b5}
+.btn-danger{background:#ff6b6b;color:white}
+.btn-danger:hover{background:#ff5252}
+.btn-outline{background:transparent;border:1px solid #2d2d44;color:#888}
+.btn-outline:hover{border-color:#00d4aa;color:#00d4aa}
+.btn-success{background:#00b894;color:white}
+.gap{display:flex;gap:0.5rem;flex-wrap:wrap;align-items:center}
+input,select{background:#16213e;border:1px solid #2d2d44;color:#e0e0e0;padding:0.38rem 0.65rem;border-radius:6px;font-size:0.88rem;width:100%}
+input:focus,select:focus{border-color:#00d4aa;outline:none}
+label{display:block;font-size:0.78rem;color:#888;margin-bottom:0.25rem}
+.up{color:#00d4aa}.down{color:#ff6b6b}.muted{color:#888;font-size:0.82rem}
+.badge{display:inline-flex;align-items:center;justify-content:center;background:#2d2d44;border-radius:10px;padding:0.1rem 0.5rem;font-size:0.72rem;color:#aaa;gap:4px}
+.badge-qty{background:#00d4aa20;color:#00d4aa;font-weight:700;min-width:26px;height:26px;border-radius:13px}
+.mt{margin-top:0.8rem}.mb{margin-bottom:0.8rem}
+.chart-wrap{width:100%;max-width:700px;margin:0.8rem auto}
+.scroll{overflow-x:auto}
+.pf-card{background:#1a1a2e;border-radius:12px;padding:1rem;margin:0.7rem 0;cursor:pointer;transition:0.15s;border:1px solid #2d2d44}
+.pf-card:hover{border-color:#00d4aa}
+.pf-card .prods{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:0.5rem}
+.toast{position:fixed;bottom:20px;right:20px;background:#1a1a2e;border:1px solid #00d4aa;border-radius:10px;padding:0.7rem 1.2rem;color:#e0e0e0;font-size:0.85rem;z-index:999;animation:fadeIn 0.3s;max-width:350px}
+.toast-error{border-color:#ff6b6b}
+@keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:200;display:flex;align-items:center;justify-content:center}
+.modal{background:#1a1a2e;border-radius:14px;padding:1.3rem;min-width:340px;max-width:520px;width:92%;max-height:85vh;overflow-y:auto}
+.modal h2{color:#00d4aa;margin-bottom:0.8rem;font-size:1.1rem}
+.modal .g{gap:0.5rem;margin-top:0.8rem;justify-content:flex-end}
+.empty{text-align:center;color:#555;padding:2rem;font-size:0.9rem}
 </style>
 </head>
 <body>
@@ -105,55 +66,52 @@ label { display:block; font-size:0.8rem; color:#888; margin-bottom:0.3rem; }
     <button data-tab="products">Products</button>
     <button data-tab="portfolios">Portfolios</button>
     <button data-tab="report">Report</button>
+    <button class="btn-outline btn-sm" onclick="exportJSON()" title="Download backup">💾</button>
+    <button class="btn-outline btn-sm" onclick="document.getElementById('importFile').click()" title="Restore backup">📂</button>
+    <input type="file" id="importFile" accept=".json" hidden onchange="importJSON(event)">
   </nav>
 </div>
 
 <div class="container">
 
-<!-- ═══ Dashboard ═══ -->
-<div id="tab-dashboard" class="tab-content">
+<!-- ═══ DASHBOARD ═══ -->
+<div id="tab-dashboard">
   <div class="row mb">
     <div class="col">
-      <div class="card">
-        <h3>📈 Market Overview</h3>
+      <div class="card"><h3>📈 Overview</h3>
+        <div id="dashSummary" class="muted mb">No products yet.</div>
         <div class="chart-wrap"><canvas id="dashChart"></canvas></div>
       </div>
     </div>
     <div class="col">
-      <div class="card">
-        <h3>🏷️ Latest Prices</h3>
-        <div id="dashPrices"></div>
-      </div>
+      <div class="card"><h3>📂 Portfolios</h3><div id="dashPortfolios"></div></div>
     </div>
   </div>
   <div class="card">
-    <div class="flex">
-      <h3>📦 All Products</h3>
-      <button class="btn btn-primary btn-sm" onclick="showAddProduct()">+ Add</button>
+    <div class="gap"><h3>📦 All Products</h3>
+      <button class="btn btn-primary btn-sm" onclick="openAddProduct()">+ Add</button>
       <button class="btn btn-outline btn-sm" onclick="seedDemo()">Seed Demo</button>
     </div>
-    <div class="scroll"><table id="dashTable"><thead><tr>
-      <th>Product</th><th>Latest</th><th>90d Avg</th><th>90d Min</th><th>90d Max</th><th></th>
-    </tr></thead><tbody id="dashTableBody"></tbody></table></div>
+    <div class="scroll"><table><thead><tr>
+      <th>Name</th><th>Latest</th><th>90d Avg</th><th>90d Min</th><th>90d Max</th><th>Trend</th><th></th>
+    </tr></thead><tbody id="dashTbody"></tbody></table></div>
   </div>
 </div>
 
-<!-- ═══ Products ═══ -->
-<div id="tab-products" class="tab-content hidden">
+<!-- ═══ PRODUCTS ═══ -->
+<div id="tab-products" class="hidden">
   <div class="card">
-    <div class="flex">
-      <h3>📦 Product Manager</h3>
-      <button class="btn btn-primary btn-sm" onclick="showAddProduct()">+ Add Product</button>
-      <button class="btn btn-outline btn-sm" onclick="showPriceEntry()">💰 Set Price</button>
+    <div class="gap"><h3>📦 Product Manager</h3>
+      <button class="btn btn-primary btn-sm" onclick="openAddProduct()">+ Add</button>
+      <button class="btn btn-outline btn-sm" onclick="openSetPrice()">💰 Price</button>
     </div>
     <div class="scroll"><table><thead><tr>
-      <th>ID</th><th>Name</th><th>Latest</th><th>Trend</th><th>History</th><th></th>
-    </tr></thead><tbody id="prodTableBody"></tbody></table></div>
+      <th>Name</th><th>Latest</th><th>Trend</th><th>90d Δ</th><th>Snaps</th><th></th>
+    </tr></thead><tbody id="prodTbody"></tbody></table></div>
   </div>
   <div class="card">
-    <div class="flex">
-      <h3>📈 Product Chart</h3>
-      <select id="prodChartSelect" onchange="loadProductChart()">
+    <div class="gap"><h3>📈 Price Chart</h3>
+      <select id="chartSelect" style="width:auto;flex:1;max-width:350px" onchange="drawProductChart()">
         <option value="">Select a product…</option>
       </select>
     </div>
@@ -161,541 +119,854 @@ label { display:block; font-size:0.8rem; color:#888; margin-bottom:0.3rem; }
   </div>
 </div>
 
-<!-- ═══ Portfolios ═══ -->
-<div id="tab-portfolios" class="tab-content hidden">
+<!-- ═══ PORTFOLIOS ═══ -->
+<div id="tab-portfolios" class="hidden">
   <div class="card">
-    <div class="flex">
-      <h3>📂 My Portfolios</h3>
-      <button class="btn btn-primary btn-sm" onclick="showCreatePortfolio()">+ Create</button>
+    <div class="gap"><h3>📂 My Portfolios</h3>
+      <button class="btn btn-primary btn-sm" onclick="openCreatePf()">+ Create</button>
     </div>
-    <div id="portfolioList"></div>
+    <div id="pfList"></div>
   </div>
 </div>
 
-<!-- ═══ Report ═══ -->
-<div id="tab-report" class="tab-content hidden">
+<!-- ═══ REPORT ═══ -->
+<div id="tab-report" class="hidden">
   <div class="row">
     <div class="col">
-      <div class="card">
-        <h3>📄 Generate Report</h3>
-        <div class="mt">
-          <label>Portfolio</label>
-          <select id="reportSelect"><option value="">Choose…</option></select>
-        </div>
-        <div class="mt">
-          <label>Lookback (days)</label>
-          <input type="number" id="reportDays" value="90" min="7" max="365">
-        </div>
-        <button class="btn btn-primary mt" onclick="downloadReport()">⬇ Download HTML Report</button>
+      <div class="card"><h3>📄 Generate HTML Report</h3>
+        <div class="mt"><label>Portfolio</label>
+          <select id="reportSel"><option value="">Choose…</option></select></div>
+        <div class="mt"><label>Lookback (days)</label>
+          <input type="number" id="reportDays" value="90" min="7" max="365"></div>
+        <button class="btn btn-primary mt" onclick="generateReport()">⬇ Download Report</button>
       </div>
     </div>
     <div class="col">
-      <div class="card">
-        <h3>📤 Export Data</h3>
-        <p class="muted mb">Download all price history as CSV for spreadsheets.</p>
-        <a class="btn btn-outline" href="/api/export" download>⬇ Download CSV</a>
+      <div class="card"><h3>🔄 Data Management</h3>
+        <p class="muted mb">Backup or restore your data at any time.</p>
+        <div class="gap">
+          <button class="btn btn-outline btn-sm" onclick="exportJSON()">💾 Download Backup</button>
+          <button class="btn btn-outline btn-sm" onclick="document.getElementById('importFile').click()">📂 Restore Backup</button>
+        </div>
       </div>
     </div>
   </div>
 </div>
 
-</div><!-- /container -->
+</div>
 
-<!-- ═══ Modals ═══ -->
+<!-- ════════ MODALS ════════ -->
 
-<!-- Add Product -->
-<div id="modal-add-product" class="modal-backdrop hidden" onclick="closeModal(event,'modal-add-product')">
-  <div class="modal" onclick="event.stopPropagation()">
+<div id="modal-add-product" class="modal-overlay hidden" onclick="closeModal(event,this)">
+  <div class="modal" onclick="ev.stopPropagation(event)" id="modal-ap">
     <h2>➕ Add Product</h2>
-    <div class="mt"><label>Product Name</label><input id="apName" placeholder="e.g. Modern Horizons 3 Play Booster Box"></div>
-    <div class="mt"><label>Cardmarket ID (optional)</label><input id="apId" placeholder="e.g. 650321" type="number"></div>
-    <div class="mt"><label>Cardmarket URL (optional)</label><input id="apUrl" placeholder="https://www.cardmarket.com/..."></div>
-    <div class="btn-group"><button class="btn btn-outline" onclick="closeModalById('modal-add-product')">Cancel</button>
+    <div><label>Product Name</label><input id="apName" placeholder="e.g. Modern Horizons 3 Play Booster Box"></div>
+    <div class="mt"><label>Current Price (€) — optional</label><input id="apPrice" type="number" step="0.01" min="0" placeholder="Leave empty to add without price"></div>
+    <div class="gap g"><button class="btn btn-outline" onclick="closeModalById('modal-add-product')">Cancel</button>
       <button class="btn btn-primary" onclick="addProduct()">Add</button></div>
   </div>
 </div>
 
-<!-- Set Price -->
-<div id="modal-price" class="modal-backdrop hidden" onclick="closeModal(event,'modal-price')">
-  <div class="modal" onclick="event.stopPropagation()">
+<div id="modal-set-price" class="modal-overlay hidden" onclick="closeModal(event,this)">
+  <div class="modal" onclick="ev.stopPropagation(event)" id="modal-sp">
     <h2>💰 Set Price</h2>
-    <div class="mt"><label>Product</label>
-      <select id="mpProduct"></select>
-    </div>
-    <div class="mt"><label>Price (€)</label><input id="mpPrice" type="number" step="0.01" min="0"></div>
-    <div class="btn-group"><button class="btn btn-outline" onclick="closeModalById('modal-price')">Cancel</button>
+    <div><label>Product</label><select id="spSel"></select></div>
+    <div class="mt"><label>Price (€)</label><input id="spPrice" type="number" step="0.01" min="0"></div>
+    <div class="gap g"><button class="btn btn-outline" onclick="closeModalById('modal-set-price')">Cancel</button>
       <button class="btn btn-primary" onclick="setPrice()">Save</button></div>
   </div>
 </div>
 
-<!-- Create Portfolio -->
-<div id="modal-create-pf" class="modal-backdrop hidden" onclick="closeModal(event,'modal-create-pf')">
-  <div class="modal" onclick="event.stopPropagation()">
+<div id="modal-create-pf" class="modal-overlay hidden" onclick="closeModal(event,this)">
+  <div class="modal" onclick="ev.stopPropagation(event)" id="modal-cp">
     <h2>📂 Create Portfolio</h2>
-    <div class="mt"><label>Portfolio Name</label><input id="cpName" placeholder="e.g. My Collection"></div>
-    <div class="mt"><label>Description (optional)</label><input id="cpDesc" placeholder="Describe your portfolio"></div>
-    <div class="btn-group"><button class="btn btn-outline" onclick="closeModalById('modal-create-pf')">Cancel</button>
+    <div><label>Portfolio Name</label><input id="cpName" placeholder="e.g. My Collection"></div>
+    <div class="mt"><label>Description (optional)</label><input id="cpDesc" placeholder="Describe it"></div>
+    <div class="gap g"><button class="btn btn-outline" onclick="closeModalById('modal-create-pf')">Cancel</button>
       <button class="btn btn-primary" onclick="createPortfolio()">Create</button></div>
   </div>
 </div>
 
-<!-- Edit Portfolio -->
-<div id="modal-edit-pf" class="modal-backdrop hidden" onclick="closeModal(event,'modal-edit-pf')">
-  <div class="modal" style="min-width:500px" onclick="event.stopPropagation()">
-    <h2 id="editPfTitle">✏️ Edit Portfolio</h2>
-    <div class="mt">
-      <label>Description</label>
-      <input id="editPfDesc" placeholder="Description">
+<div id="modal-edit-pf" class="modal-overlay hidden" onclick="closeModal(event,this)">
+  <div class="modal" style="min-width:480px" onclick="ev.stopPropagation(event)" id="modal-ep">
+    <h2 id="epTitle">✏️ Edit Portfolio</h2>
+    <div class="mt"><label>Description</label><input id="epDesc" placeholder="Description" onchange="savePfDesc()"></div>
+    <div class="mt"><label>Products</label><div id="epProducts"></div></div>
+    <div class="gap mt">
+      <select id="epAddSel" style="flex:1"><option value="">Select product…</option></select>
+      <input id="epAddQty" type="number" value="1" min="1" style="width:65px" placeholder="Qty">
+      <button class="btn btn-primary btn-sm" onclick="epAddProduct()">+ Add</button>
     </div>
-    <div class="mt">
-      <label>Products</label>
-      <div id="editPfProducts"></div>
-    </div>
-    <div class="flex mt">
-      <select id="editPfAddSelect" style="flex:1"><option value="">Select product to add…</option></select>
-      <input id="editPfAddQty" type="number" value="1" min="1" style="width:70px" placeholder="Qty">
-      <button class="btn btn-primary btn-sm" onclick="addProductToEditPf()">+ Add</button>
-    </div>
-    <div class="btn-group"><button class="btn btn-outline" onclick="closeModalById('modal-edit-pf')">Close</button>
-      <button class="btn btn-danger btn-sm" id="editPfDelBtn" onclick="deleteCurrentPortfolio()">🗑️ Delete Portfolio</button>
+    <div class="gap g">
+      <button class="btn btn-outline" onclick="closeModalById('modal-edit-pf')">Close</button>
+      <button class="btn btn-danger btn-sm" onclick="deletePf()">🗑️ Delete</button>
     </div>
   </div>
 </div>
 
 <script>
-// ══════════════════════════════════════════════════════
-// App State
-// ══════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════
+// DATA LAYER (localStorage)
+// ═══════════════════════════════════════════════════════════
 
-let products = [];
-let portfolios = [];
-let portfolioChart = null;
-let productChart = null;
-let dashChart = null;
-let editingPfName = null;
+const STORAGE_KEY = 'mtg_tracker_data';
+let data = { products: {}, snapshots: {}, portfolios: [] };
+let charts = {};
 
-// ══════════════════════════════════════════════════════
-// Init
-// ══════════════════════════════════════════════════════
+function saveData() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  } catch(e) { console.error('save failed', e); }
+}
 
-document.addEventListener('DOMContentLoaded', () => {
-  // Tab navigation
-  document.querySelectorAll('[data-tab]').forEach(btn => {
-    btn.addEventListener('click', () => switchTab(btn.dataset.tab));
+function loadData() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) { data = JSON.parse(raw); }
+  } catch(e) { console.error('load failed', e); }
+  // Ensure structure
+  if (!data.products) data.products = {};
+  if (!data.snapshots) data.snapshots = {};
+  if (!data.portfolios) data.portfolios = [];
+  // Migrate old portfolio format
+  data.portfolios.forEach(pf => {
+    if (pf.product_names && !pf.products) {
+      pf.products = pf.product_names.map(n => ({name: n, qty: 1}));
+      delete pf.product_names;
+    }
+    if (!pf.products) pf.products = [];
   });
-  loadAll();
+}
+
+loadData();
+
+// ═══════════════════════════════════════════════════════════
+// HELPERS
+// ═══════════════════════════════════════════════════════════
+
+function fmt(v) { return v == null ? '—' : '€' + Number(v).toFixed(2); }
+function esc(s) { if(!s)return''; return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function today() { return new Date().toISOString().slice(0,10); }
+function toast(msg, isErr) {
+  const t = document.createElement('div');
+  t.className = 'toast' + (isErr ? ' toast-error' : '');
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 3000);
+}
+function closeModal(evt, el) { if(evt.target.classList.contains('modal-overlay')) el.classList.add('hidden'); }
+function closeModalById(id) { document.getElementById(id).classList.add('hidden'); }
+
+// ═══════════════════════════════════════════════════════════
+// TAB SWITCHING
+// ═══════════════════════════════════════════════════════════
+
+document.querySelectorAll('[data-tab]').forEach(b => {
+  b.addEventListener('click', () => {
+    document.querySelectorAll('.tab-content, [id^="tab-"]').forEach(el => el.classList.add('hidden'));
+    document.getElementById('tab-' + b.dataset.tab).classList.remove('hidden');
+    document.querySelectorAll('[data-tab]').forEach(x => x.classList.remove('active'));
+    b.classList.add('active');
+    if (b.dataset.tab === 'dashboard') renderDashboard();
+    if (b.dataset.tab === 'products') { renderProducts(); drawProductChart(); }
+    if (b.dataset.tab === 'portfolios') renderPortfolios();
+    if (b.dataset.tab === 'report') populateReportSel();
+  });
 });
 
-async function loadAll() {
-  await Promise.all([loadProducts(), loadPortfolios()]);
-  renderDashboard();
-  renderProducts();
-  renderPortfolios();
-  populateProductSelects();
-  populateReportSelect();
+// ═══════════════════════════════════════════════════════════
+// PRODUCTS
+// ═══════════════════════════════════════════════════════════
+
+function getProducts() {
+  return Object.entries(data.products).map(([id, p]) => {
+    const snaps = data.snapshots[id] || [];
+    const prices = snaps.filter(s => s.avg != null).map(s => s.avg);
+    const latest = prices.length ? prices[prices.length - 1] : null;
+    const first90 = prices.length > 1 ? prices[Math.max(0, prices.length - 91)] : prices[0] || null;
+    const p90 = prices.slice(-91);
+    const avg90 = p90.length ? p90.reduce((a,b)=>a+b,0)/p90.length : null;
+    const min90 = p90.length ? Math.min(...p90) : null;
+    const max90 = p90.length ? Math.max(...p90) : null;
+    const chg90 = (latest != null && first90 != null && first90 !== 0) ? ((latest-first90)/first90*100) : null;
+    const trend = (prices.length >= 2) ? ((latest - prices[prices.length-2]) / prices[prices.length-2] * 100) : 0;
+    return { id: parseInt(id), name: p.name, latest, avg90, min90, max90, chg90, trend, snaps: prices.length, history: snaps.map(s => ({date:s.date, avg:s.avg, low:s.low})) };
+  }).sort((a,b) => a.name.localeCompare(b.name));
 }
 
-async function loadProducts() {
-  const r = await fetch('/api/products');
-  products = await r.json();
+function addProduct() {
+  const name = document.getElementById('apName').value.trim();
+  const price = document.getElementById('apPrice').value;
+  if (!name) { toast('Enter a name', true); return; }
+  // Check for duplicate
+  if (Object.values(data.products).some(p => p.name.toLowerCase() === name.toLowerCase())) {
+    toast('Product already exists', true); return;
+  }
+  const id = Date.now();
+  data.products[id] = { name };
+  if (price) {
+    const val = parseFloat(price);
+    if (!data.snapshots[id]) data.snapshots[id] = [];
+    data.snapshots[id].push({ date: today(), avg: val, low: null });
+  }
+  saveData();
+  closeModalById('modal-add-product');
+  toast('✅ Added: ' + name);
+  refreshAll();
 }
 
-async function loadPortfolios() {
-  const r = await fetch('/api/portfolios');
-  portfolios = await r.json();
+function openAddProduct() {
+  document.getElementById('apName').value = '';
+  document.getElementById('apPrice').value = '';
+  document.getElementById('modal-add-product').classList.remove('hidden');
 }
 
-// ══════════════════════════════════════════════════════
-// Tabs
-// ══════════════════════════════════════════════════════
-
-function switchTab(tab) {
-  document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
-  document.getElementById('tab-' + tab).classList.remove('hidden');
-  document.querySelectorAll('[data-tab]').forEach(b => b.classList.remove('active'));
-  document.querySelector(`[data-tab="${tab}"]`).classList.add('active');
-  if (tab === 'dashboard') renderDashboard();
-  if (tab === 'products') { renderProducts(); loadProductChart(); }
-  if (tab === 'portfolios') renderPortfolios();
+function openSetPrice() {
+  const sel = document.getElementById('spSel');
+  sel.innerHTML = '<option value="">Choose…</option>' +
+    getProducts().map(p => `<option value="${p.id}">${esc(p.name)}</option>`).join('');
+  document.getElementById('spPrice').value = '';
+  document.getElementById('modal-set-price').classList.remove('hidden');
 }
 
-// ══════════════════════════════════════════════════════
-// Dashboard
-// ══════════════════════════════════════════════════════
+function setPrice() {
+  const id = document.getElementById('spSel').value;
+  const price = document.getElementById('spPrice').value;
+  if (!id || !price) { toast('Select product and enter price', true); return; }
+  const val = parseFloat(price);
+  if (!data.snapshots[id]) data.snapshots[id] = [];
+  data.snapshots[id].push({ date: today(), avg: val, low: null });
+  saveData();
+  closeModalById('modal-set-price');
+  toast('✅ Price recorded: ' + data.products[id].name);
+  refreshAll();
+}
 
-function renderDashboard() {
-  // Table
-  const tbody = document.getElementById('dashTableBody');
-  tbody.innerHTML = products.map(p => {
-    const trend = p.trend || 0;
-    return `<tr>
-      <td><strong>${esc(p.name)}</strong></td>
-      <td>${fmt(p.latest)}</td>
-      <td>${fmt(p.avg_90d)}</td>
-      <td>${fmt(p.min_90d)}</td>
-      <td>${fmt(p.max_90d)}</td>
-      <td><span class="${trend >= 0 ? 'up' : 'down'}">${trend > 0 ? '+' : ''}${trend.toFixed(1)}%</span></td>
-    </tr>`;
+function deleteProduct(id, name) {
+  if (!confirm(`Delete "${name}" and all its price history?`)) return;
+  delete data.products[id];
+  delete data.snapshots[id];
+  saveData();
+  toast('🗑️ Deleted: ' + name);
+  refreshAll();
+}
+
+function seedDemo() {
+  const prods = [
+    ['Modern Horizons 3 Play Booster Box', 210, -0.08],
+    ['Modern Horizons 2 Draft Booster Box', 275, +0.12],
+    ['Commander Masters Draft Booster Box', 340, -0.05],
+    ['Double Masters 2022 Draft Booster Box', 320, -0.03],
+    ['Ravnica Remastered Draft Booster Box', 155, +0.06],
+    ['Tarkir: Dragonstorm Play Booster Box', 95, -0.15],
+    ['Innistrad Remastered Play Booster Box', 140, +0.04],
+    ['Bloomburrow Play Booster Box', 110, -0.10],
+  ];
+  const seed = 42;
+  let rng = seed;
+  function rnd() { rng = (rng * 16807) % 2147483647; return (rng - 1) / 2147483646; }
+  function gauss() { const u=0,v=0; let a,b,s; do{a=rnd()*2-1;b=rnd()*2-1;s=a*a+b*b}while(s>=1);return a*Math.sqrt(-2*Math.log(s)/s); }
+
+  // Clear existing
+  data.products = {};
+  data.snapshots = {};
+
+  const today_d = new Date();
+  for (const [name, base, trendPct] of prods) {
+    const id = Date.now() + Math.floor(rnd() * 100000);
+    data.products[id] = { name };
+    data.snapshots[id] = [];
+    for (let d = 90; d >= 0; d--) {
+      const dt = new Date(today_d);
+      dt.setDate(dt.getDate() - d);
+      const drift = trendPct * (90 - d) / 90 * base;
+      const avg = Math.max(1, parseFloat((base + drift + gauss() * 4).toFixed(2)));
+      data.snapshots[id].push({ date: dt.toISOString().slice(0,10), avg, low: null });
+    }
+  }
+  saveData();
+  toast('✅ Seeded 8 products × 91 days');
+  refreshAll();
+}
+
+// ═══════════════════════════════════════════════════════════
+// PORTFOLIOS
+// ═══════════════════════════════════════════════════════════
+
+function openCreatePf() {
+  document.getElementById('cpName').value = '';
+  document.getElementById('cpDesc').value = '';
+  document.getElementById('modal-create-pf').classList.remove('hidden');
+}
+
+function createPortfolio() {
+  const name = document.getElementById('cpName').value.trim();
+  if (!name) { toast('Enter a name', true); return; }
+  if (data.portfolios.some(p => p.name.toLowerCase() === name.toLowerCase())) {
+    toast('Portfolio already exists', true); return;
+  }
+  data.portfolios.push({ name, description: document.getElementById('cpDesc').value.trim(), products: [] });
+  saveData();
+  closeModalById('modal-create-pf');
+  toast('📂 Created: ' + name);
+  refreshAll();
+}
+
+function renderPortfolios() {
+  const el = document.getElementById('pfList');
+  if (!data.portfolios.length) {
+    el.innerHTML = '<div class="empty">No portfolios yet. Click "Create" above.</div>';
+    return;
+  }
+  el.innerHTML = data.portfolios.map((pf, idx) => {
+    const totalQty = pf.products.reduce((s, p) => s + (p.qty || 1), 0);
+    const prods = pf.products.slice(0, 6);
+    return `<div class="pf-card" onclick="editPf(${idx})">
+      <div class="gap" style="justify-content:space-between">
+        <div><strong style="color:#ffd93d">📂 ${esc(pf.name)}</strong>
+          ${pf.description ? '<span class="muted"> — ' + esc(pf.description) + '</span>' : ''}</div>
+        <div class="gap"><span class="badge">${totalQty} units</span><span class="badge">${pf.products.length} products</span></div>
+      </div>
+      <div class="prods">${prods.map(p => `<span class="badge-qty">${p.qty || 1}</span><span style="font-size:0.82rem">${esc(p.name)}</span>`).join('')}
+      ${pf.products.length > 6 ? '<span class="muted">…+' + (pf.products.length - 6) + ' more</span>' : ''}</div>
+    </div>`;
+  }).join('');
+}
+
+function editPf(idx) {
+  const pf = data.portfolios[idx];
+  if (!pf) return;
+  document.getElementById('epTitle').textContent = '✏️ ' + pf.name;
+  document.getElementById('epDesc').value = pf.description || '';
+  // Store index for callbacks
+  document.getElementById('modal-edit-pf').dataset.idx = idx;
+  renderEpProducts(pf);
+  const sel = document.getElementById('epAddSel');
+  sel.innerHTML = '<option value="">Select product…</option>' +
+    getProducts().map(p => `<option value="${p.id}">${esc(p.name)}</option>`).join('');
+  document.getElementById('epAddQty').value = 1;
+  document.getElementById('modal-edit-pf').classList.remove('hidden');
+}
+
+function renderEpProducts(pf) {
+  const el = document.getElementById('epProducts');
+  if (!pf.products.length) {
+    el.innerHTML = '<p class="muted">No products in this portfolio.</p>'; return;
+  }
+  el.innerHTML = `<table><thead><tr><th>Product</th><th>Qty</th><th></th></tr></thead><tbody>
+    ${pf.products.map((p, i) => `<tr>
+      <td>${esc(p.name)}</td>
+      <td><input type="number" value="${p.qty || 1}" min="0" step="1" style="width:60px"
+           onchange="epUpdateQty(${i}, this.value)"></td>
+      <td><button class="btn btn-danger btn-sm" onclick="epRemove(${i})">✕</button></td>
+    </tr>`).join('')}
+  </tbody></table>`;
+}
+
+function epUpdateQty(idx, val) {
+  const ixf = parseInt(document.getElementById('modal-edit-pf').dataset.idx);
+  const pf = data.portfolios[ixf];
+  if (!pf) return;
+  const qty = parseInt(val) || 1;
+  if (qty <= 0) { pf.products.splice(idx, 1); }
+  else { pf.products[idx].qty = qty; }
+  saveData();
+  renderEpProducts(pf);
+}
+
+function epRemove(idx) {
+  const ixf = parseInt(document.getElementById('modal-edit-pf').dataset.idx);
+  const pf = data.portfolios[ixf];
+  if (!pf) return;
+  pf.products.splice(idx, 1);
+  saveData();
+  renderEpProducts(pf);
+}
+
+function epAddProduct() {
+  const ixf = parseInt(document.getElementById('modal-edit-pf').dataset.idx);
+  const pf = data.portfolios[ixf];
+  if (!pf) return;
+  const sel = document.getElementById('epAddSel');
+  const qty = parseInt(document.getElementById('epAddQty').value) || 1;
+  const pid = sel.value;
+  if (!pid) { toast('Select a product', true); return; }
+  const prod = getProducts().find(p => p.id == pid);
+  if (!prod) return;
+  const exist = pf.products.find(p => p.name === prod.name);
+  if (exist) { exist.qty += qty; }
+  else { pf.products.push({ name: prod.name, qty }); }
+  saveData();
+  renderEpProducts(pf);
+  sel.value = '';
+  toast('➕ Added ' + prod.name + ' ×' + qty);
+}
+
+function savePfDesc() {
+  const ixf = parseInt(document.getElementById('modal-edit-pf').dataset.idx);
+  const pf = data.portfolios[ixf];
+  if (!pf) return;
+  pf.description = document.getElementById('epDesc').value.trim();
+  saveData();
+}
+
+function deletePf() {
+  const ixf = parseInt(document.getElementById('modal-edit-pf').dataset.idx);
+  const pf = data.portfolios[ixf];
+  if (!pf || !confirm(`Delete portfolio "${pf.name}"?`)) return;
+  data.portfolios.splice(ixf, 1);
+  saveData();
+  closeModalById('modal-edit-pf');
+  toast('🗑️ Deleted portfolio');
+  refreshAll();
+}
+
+// ═══════════════════════════════════════════════════════════
+// REPORT GENERATION
+// ═══════════════════════════════════════════════════════════
+
+function populateReportSel() {
+  document.getElementById('reportSel').innerHTML = '<option value="">Choose a portfolio…</option>' +
+    data.portfolios.map(p => `<option value="${esc(p.name)}">${esc(p.name)}</option>`).join('');
+}
+
+function generateReport() {
+  const name = document.getElementById('reportSel').value;
+  const days = parseInt(document.getElementById('reportDays').value) || 90;
+  if (!name) { toast('Select a portfolio', true); return; }
+  const pf = data.portfolios.find(p => p.name === name);
+  if (!pf || !pf.products.length) { toast('Portfolio is empty', true); return; }
+
+  const now = new Date().toISOString().slice(0,10).replace(/-/g,'-');
+  const allProds = getProducts();
+  const resolved = pf.products.map(pc => {
+    const prod = allProds.find(p => p.name === pc.name);
+    return prod ? { ...prod, qty: pc.qty } : null;
+  }).filter(Boolean);
+  if (!resolved.length) { toast('No tracked products found', true); return; }
+
+  const cutoff = new Date();
+  cutoff.setDate(cutoff.getDate() - days);
+
+  // Build series for chart
+  const series = resolved.map(r => {
+    const snaps = (data.snapshots[r.id] || []).filter(s => new Date(s.date) >= cutoff);
+    return { name: r.name, qty: r.qty, data: snaps };
+  });
+
+  // Get all dates
+  const allDates = [...new Set(series.flatMap(s => s.data.map(d => d.date)))].sort();
+
+  // Build chart data
+  const chartLabels = allDates;
+  const chartDatasets = series.map((s, i) => {
+    const color = ['#00d4aa','#ff6b6b','#ffd93d','#6c5ce7','#00b894','#e17055','#0984e3','#fdcb6e'][i % 8];
+    const values = allDates.map(d => {
+      const snap = [...s.data].reverse().find(x => x.date <= d);
+      return snap ? (snap.avg || 0) * s.qty : 0;
+    });
+    return { label: s.name + (s.qty > 1 ? ' ×' + s.qty : ''), data: values, borderColor: color, fill: false, tension: 0.3, pointRadius: 1 };
+  });
+
+  // Combined totals
+  const totals = allDates.map((_, di) => chartDatasets.reduce((s, ds) => s + (ds.data[di] || 0), 0));
+
+  // Prices map for table
+  const prices = {};
+  resolved.forEach(r => {
+    const snaps = data.snapshots[r.id] || [];
+    const last = [...snaps].reverse().find(s => new Date(s.date) >= cutoff);
+    const first = snaps.find(s => new Date(s.date) >= cutoff);
+    const vals = snaps.filter(s => new Date(s.date) >= cutoff && s.avg != null).map(s => s.avg);
+    const avg = vals.length ? vals.reduce((a,b)=>a+b,0)/vals.length : null;
+    const min = vals.length ? Math.min(...vals) : null;
+    const max = vals.length ? Math.max(...vals) : null;
+    const lastP = last ? last.avg : null;
+    const firstP = first ? first.avg : null;
+    const chg = (lastP != null && firstP != null && firstP !== 0) ? ((lastP-firstP)/firstP*100) : null;
+    prices[r.name] = { latest: lastP, avg, min, max, first: firstP, chg, snaps: snaps.filter(s => new Date(s.date) >= cutoff), qty: r.qty };
+  });
+
+  const totalVal = totals.length ? totals[totals.length-1] : 0;
+  const avgChg = resolved.filter(r => prices[r.name].chg != null).reduce((s, r) => s + prices[r.name].chg, 0);
+  const nChg = resolved.filter(r => prices[r.name].chg != null).length;
+  const avgChgVal = nChg ? avgChg / nChg : 0;
+  const totalQty = resolved.reduce((s, r) => s + r.qty, 0);
+
+  // Generate chart image
+  const chartUrl = buildChartImage(chartLabels, chartDatasets, totals, pf.name + ' — ' + days + 'd');
+
+  // Helper
+  const f = (v) => v == null ? '—' : '€' + Number(v).toFixed(2);
+  const pc = (v) => v == null ? '—' : (v >= 0 ? '+' : '') + v.toFixed(1) + '%';
+  const cls = (v) => v != null && v >= 0 ? 'up' : 'down';
+
+  // Product detail rows
+  const rows = resolved.map(r => {
+    const p = prices[r.name];
+    const qtyTag = r.qty > 1 ? ' ×' + r.qty : '';
+    return `<tr><td>${esc(r.name)}${qtyTag}</td>
+      <td><strong>${f(p.latest)}</strong></td>
+      <td>${f(p.min)}</td>
+      <td>${f(p.avg)}</td>
+      <td>${f(p.latest != null ? p.latest * r.qty : null)}</td>
+      <td class="${cls(p.chg)}">${pc(p.chg)}</td></tr>`;
   }).join('');
 
-  // Summary cards
-  const total = products.reduce((s, p) => s + (p.latest || 0), 0);
-  const avgChange = products.filter(p => p.latest && p.min_90d)
-    .reduce((s, p) => s + (((p.latest - p.min_90d) / p.min_90d) * 100), 0);
-  const n = products.filter(p => p.latest).length;
-  document.getElementById('dashPrices').innerHTML = `
-    <div class="flex"><span class="muted">Portfolio Value (all):</span>
-      <strong>${fmt(total)}</strong></div>
-    <div class="flex"><span class="muted">Avg 90d Change:</span>
-      <span class="${avgChange >= 0 ? 'up' : 'down'}">${avgChange > 0 ? '+' : ''}${avgChange.toFixed(1)}%</span></div>
-    <div class="flex"><span class="muted">Products tracked:</span>
-      <strong>${products.length}</strong></div>
-  `;
+  // Per-product detail cards
+  const detailCards = resolved.map(r => {
+    const p = prices[r.name];
+    const hist = p.snaps.slice(-14);
+    const histRows = hist.map(s => `<tr><td>${s.date}</td><td>${f(s.avg)}</td></tr>`).join('');
+    const qtyTag = r.qty > 1 ? ' ×' + r.qty + ' — <span style="color:#00d4aa">' + f(p.latest != null ? p.latest * r.qty : null) + '</span>' : '';
+    return `<div style="background:#1a1a2e;border-radius:10px;padding:0.8rem;margin:0.6rem 0;break-inside:avoid">
+      <h3 style="color:#ffd93d;font-size:0.95rem;margin:0 0 0.4rem">📦 ${esc(r.name)}${qtyTag}</h3>
+      <table style="font-size:0.82rem"><tr><td width="100">Latest</td><td><strong>${f(p.latest)}</strong></td>
+        <td width="100">${days}d Avg</td><td>${f(p.avg)}</td></tr>
+      <tr><td>${days}d Min</td><td>${f(p.min)}</td><td>${days}d Max</td><td>${f(p.max)}</td></tr>
+      <tr><td>Qty</td><td>${r.qty}</td><td>${days}d Change</td><td class="${cls(p.chg)}">${pc(p.chg)}</td></tr></table>
+      ${hist.length ? `<details><summary style="color:#888;font-size:0.8rem;cursor:pointer;margin-top:0.3rem">📜 Recent history</summary><table style="font-size:0.78rem"><tr><th>Date</th><th>Price</th></tr>${histRows}</table></details>` : ''}
+    </div>`;
+  }).join('');
 
-  // Chart
+  const html = `<!DOCTYPE html><html lang="en"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Portfolio — ${esc(pf.name)}</title>
+<style>*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#0f0f1a;color:#e0e0e0;padding:1.5rem}
+h1{font-size:1.5rem;margin-bottom:0.2rem;color:#00d4aa}
+h2{font-size:1.2rem;margin:1rem 0 0.5rem;color:#00d4aa}
+.sub{color:#888;margin-bottom:1rem;font-size:0.85rem}
+.sum{display:flex;gap:1rem;margin:1rem 0;flex-wrap:wrap}
+.c{background:#1a1a2e;border-radius:10px;padding:0.8rem 1.2rem;flex:1;min-width:130px}
+.c .l{font-size:0.75rem;color:#888;text-transform:uppercase}
+.c .v{font-size:1.3rem;font-weight:700;margin-top:0.2rem}
+.ch{max-width:750px;margin:1rem auto;text-align:center}
+.ch img{max-width:100%;height:auto;border-radius:8px}
+table{width:100%;border-collapse:collapse;margin:0.5rem 0;font-size:0.85rem}
+th{text-align:left;padding:0.45rem 0.6rem;background:#16213e;color:#888;border-bottom:2px solid #2d2d44;font-size:0.72rem;text-transform:uppercase}
+td{padding:0.45rem 0.6rem;border-bottom:1px solid #1e1e30}
+tr:hover td{background:#16213e}
+.up{color:#00d4aa}.down{color:#ff6b6b}
+.dc{column-count:2;column-gap:1rem}
+@media(max-width:700px){.dc{column-count:1}}
+.f{text-align:center;color:#555;font-size:0.75rem;margin-top:2rem}
+</style></head><body>
+<h1>📊 ${esc(pf.name)}</h1>
+<p class="sub">${pf.description ? esc(pf.description) + ' · ' : ''}${days}d lookback · ${resolved.length} products, ${totalQty} units · Generated ${new Date().toLocaleString()}</p>
+
+<div class="sum">
+  <div class="c"><div class="l">Portfolio Value</div><div class="v">${f(totalVal)}</div></div>
+  <div class="c"><div class="l">Avg ${days}d Change</div><div class="v ${cls(avgChgVal)}">${pc(avgChgVal)}</div></div>
+  <div class="c"><div class="l">Products / Units</div><div class="v">${resolved.length} / ${totalQty}</div></div>
+</div>
+
+<div class="ch">${chartUrl}</div>
+
+<h2>Breakdown</h2>
+<table><thead><tr><th>Product</th><th>Latest</th><th>${days}d Min</th><th>${days}d Avg</th><th>Subtotal</th><th>${days}d Δ</th></tr></thead>
+<tbody>${rows}</tbody></table>
+
+<h2>Product Details</h2>
+<div class="dc">${detailCards}</div>
+
+<div class="f">MTG Price Tracker · Generated with ❤️</div>
+</body></html>`;
+
+  downloadFile(html, `portfolio_${pf.name.replace(/\s+/g,'_').toLowerCase()}.html`, 'text/html');
+  toast('✅ Report generated!');
+}
+
+function buildChartImage(labels, datasets, totals, title) {
+  if (!labels.length) return '<p class="muted">No data for chart.</p>';
+  const canvas = document.createElement('canvas');
+  canvas.width = 900;
+  canvas.height = 500;
+  const ctx = canvas.getContext('2d');
+
+  // Dark background
+  ctx.fillStyle = '#1a1a2e';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  // Title
+  ctx.fillStyle = '#e0e0e0';
+  ctx.font = '14px sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText(title || '', canvas.width/2, 25);
+
+  // We'll use Canvas native drawing for simplicity
+  const margin = { top: 40, right: 20, bottom: 40, left: 65 };
+  const w = canvas.width - margin.left - margin.right;
+  const h = canvas.height - margin.top - margin.bottom;
+
+  // Find max value
+  const allVals = [...totals, ...datasets.flatMap(d => d.data)];
+  const maxVal = Math.max(...allVals.filter(v => v > 0), 1) * 1.1;
+  const minVal = 0;
+
+  // Grid lines
+  ctx.strokeStyle = '#2d2d44';
+  ctx.lineWidth = 0.5;
+  for (let i = 0; i <= 4; i++) {
+    const y = margin.top + (h / 4) * i;
+    ctx.beginPath(); ctx.moveTo(margin.left, y); ctx.lineTo(margin.left + w, y); ctx.stroke();
+  }
+
+  // Y-axis labels
+  ctx.fillStyle = '#888';
+  ctx.font = '11px sans-serif';
+  ctx.textAlign = 'right';
+  for (let i = 0; i <= 4; i++) {
+    const val = maxVal - (maxVal / 4) * i;
+    const y = margin.top + (h / 4) * i;
+    ctx.fillText('€' + val.toFixed(0), margin.left - 8, y + 4);
+  }
+
+  // Draw individual product lines
+  const colors = ['#00d4aa','#ff6b6b','#ffd93d','#6c5ce7','#00b894','#e17055','#0984e3','#fdcb6e'];
+  const stepX = w / Math.max(labels.length - 1, 1);
+  datasets.forEach((ds, i) => {
+    ctx.strokeStyle = colors[i % colors.length];
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ds.data.forEach((val, di) => {
+      const x = margin.left + di * stepX;
+      const y = margin.top + h - ((val - minVal) / (maxVal - minVal)) * h;
+      di === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+    });
+    ctx.stroke();
+  });
+
+  // Fill area for combined total
+  ctx.fillStyle = 'rgba(0,212,170,0.15)';
+  ctx.beginPath();
+  totals.forEach((val, i) => {
+    const x = margin.left + i * stepX;
+    const y = margin.top + h - ((val - minVal) / (maxVal - minVal)) * h;
+    i === 0 ? ctx.moveTo(x, margin.top + h) : '';
+    ctx.lineTo(x, y);
+  });
+  ctx.lineTo(margin.left + (totals.length - 1) * stepX, margin.top + h);
+  ctx.closePath();
+  ctx.fill();
+
+  // Combined total line (thick)
+  ctx.strokeStyle = '#00d4aa';
+  ctx.lineWidth = 2.5;
+  ctx.beginPath();
+  totals.forEach((val, i) => {
+    const x = margin.left + i * stepX;
+    const y = margin.top + h - ((val - minVal) / (maxVal - minVal)) * h;
+    i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+  });
+  ctx.stroke();
+
+  // X-axis labels (show ~10)
+  ctx.textAlign = 'center';
+  const stepLabel = Math.max(1, Math.floor(labels.length / 10));
+  labels.forEach((d, i) => {
+    if (i % stepLabel !== 0 && i !== labels.length - 1) return;
+    ctx.fillText(d.slice(5), margin.left + i * stepX, margin.top + h + 18);
+  });
+
+  // Legend
+  ctx.textAlign = 'left';
+  let lx = margin.left + 10;
+  const ly = margin.top + h + 32;
+  ctx.font = '11px sans-serif';
+  datasets.forEach((ds, i) => {
+    const label = ds.label.length > 15 ? ds.label.slice(0,14) + '…' : ds.label;
+    const tw = ctx.measureText(label).width + 22;
+    if (lx + tw > margin.left + w) return;
+    ctx.fillStyle = colors[i % colors.length];
+    ctx.fillRect(lx, ly, 10, 10);
+    ctx.fillStyle = '#aaa';
+    ctx.fillText(label, lx + 14, ly + 9);
+    lx += tw + 10;
+  });
+
+  return '<img src="' + canvas.toDataURL() + '" alt="Chart" />';
+}
+
+// ═══════════════════════════════════════════════════════════
+// CHARTS (interactive)
+// ═══════════════════════════════════════════════════════════
+
+function drawProductChart() {
+  const id = document.getElementById('chartSelect').value;
+  if (!id) return;
+  const prods = getProducts();
+  const prod = prods.find(p => p.id == id);
+  if (!prod || !prod.history || !prod.history.length) return;
+
+  const ctx = document.getElementById('prodChart').getContext('2d');
+  if (charts.product) charts.product.destroy();
+
+  const data = prod.history;
+  charts.product = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: data.map(d => d.date),
+      datasets: [
+        { label: 'Price', data: data.map(d => d.avg), borderColor: '#00d4aa', fill: true,
+          backgroundColor: 'rgba(0,212,170,0.1)', tension: 0.3, pointRadius: 1.5 },
+      ]
+    },
+    options: {
+      responsive: true,
+      plugins: { title: { display: true, text: prod.name, color: '#e0e0e0', font: { size: 14 } },
+        legend: { labels: { color: '#888' } } },
+      scales: {
+        x: { ticks: { color: '#888', maxTicksLimit: 10, maxRotation: 30 } },
+        y: { ticks: { color: '#888' }, grid: { color: '#1e1e30' } }
+      }
+    }
+  });
+}
+
+// ═══════════════════════════════════════════════════════════
+// RENDER
+// ═══════════════════════════════════════════════════════════
+
+function renderDashboard() {
+  const prods = getProducts();
+
+  // Summary
+  const totalVal = prods.reduce((s, p) => s + (p.latest || 0), 0);
+  const avgChg = prods.filter(p => p.chg90 != null).reduce((s, p) => s + p.chg90, 0);
+  const nChg = prods.filter(p => p.chg90 != null).length;
+  document.getElementById('dashSummary').innerHTML = prods.length
+    ? `<div class="gap"><span>Total: <strong>${fmt(totalVal)}</strong></span>
+       <span>Avg 90d: <span class="${avgChg >= 0 ? 'up' : 'down'}">${avgChg > 0 ? '+' : ''}${(nChg ? avgChg/nChg : 0).toFixed(1)}%</span></span>
+       <span>Products: <strong>${prods.length}</strong></span></div>`
+    : 'No products yet. Click "Seed Demo" or add products manually.';
+
+  // Table
+  document.getElementById('dashTbody').innerHTML = prods.map(p =>
+    `<tr><td><strong>${esc(p.name)}</strong></td>
+      <td>${fmt(p.latest)}</td><td>${fmt(p.avg90)}</td><td>${fmt(p.min90)}</td>
+      <td>${fmt(p.max90)}</td>
+      <td class="${p.chg90 != null && p.chg90 >= 0 ? 'up' : 'down'}">${p.chg90 != null ? (p.chg90 > 0 ? '+' : '') + p.chg90.toFixed(1) + '%' : '—'}</td>
+      <td><button class="btn btn-danger btn-sm" onclick="deleteProduct(${p.id},'${esc(p.name)}')">✕</button></td></tr>`
+  ).join('');
+
+  // Portfolio summary
+  const pfEl = document.getElementById('dashPortfolios');
+  if (data.portfolios.length) {
+    pfEl.innerHTML = data.portfolios.map(pf => {
+      const totalQty = pf.products.reduce((s, p) => s + (p.qty || 1), 0);
+      return `<div style="padding:0.4rem 0;border-bottom:1px solid #1e1e30;font-size:0.85rem">
+        📂 <strong>${esc(pf.name)}</strong> <span class="badge">${totalQty} units</span></div>`;
+    }).join('');
+  } else {
+    pfEl.innerHTML = '<div class="muted">No portfolios yet.</div>';
+  }
+
+  // Bar chart
   const ctx = document.getElementById('dashChart').getContext('2d');
-  if (dashChart) dashChart.destroy();
-  if (products.length === 0) { dashChart = null; return; }
-
-  const labels = products.map(p => p.name.length > 28 ? p.name.slice(0, 25) + '…' : p.name);
-  const latest = products.map(p => p.latest || 0);
-  const min90 = products.map(p => p.min_90d || 0);
-
-  dashChart = new Chart(ctx, {
+  if (charts.dash) charts.dash.destroy();
+  if (!prods.length) { charts.dash = null; return; }
+  charts.dash = new Chart(ctx, {
     type: 'bar',
     data: {
-      labels,
+      labels: prods.map(p => p.name.length > 22 ? p.name.slice(0,19)+'…' : p.name),
       datasets: [
-        { label: 'Latest', data: latest, backgroundColor: '#00d4aa', borderRadius: 4 },
-        { label: '90d Min', data: min90, backgroundColor: '#2d2d44', borderRadius: 4 },
+        { label: 'Latest', data: prods.map(p => p.latest || 0), backgroundColor: '#00d4aa', borderRadius: 4 },
+        { label: '90d Avg', data: prods.map(p => p.avg90 || 0), backgroundColor: '#2d2d44', borderRadius: 4 },
       ]
     },
     options: {
       responsive: true,
       plugins: { legend: { labels: { color: '#888' } } },
       scales: {
-        x: { ticks: { color: '#888', maxRotation: 30 } },
+        x: { ticks: { color: '#888', maxRotation: 25 } },
         y: { ticks: { color: '#888' }, grid: { color: '#1e1e30' } }
       }
     }
   });
 }
-
-// ══════════════════════════════════════════════════════
-// Products Tab
-// ══════════════════════════════════════════════════════
 
 function renderProducts() {
-  const tbody = document.getElementById('prodTableBody');
-  tbody.innerHTML = products.map(p => {
-    const trend = p.trend || 0;
-    return `<tr>
-      <td class="muted">${p.id}</td>
-      <td><strong>${esc(p.name)}</strong></td>
+  const prods = getProducts();
+  document.getElementById('prodTbody').innerHTML = prods.map(p =>
+    `<tr><td><strong>${esc(p.name)}</strong></td>
       <td>${fmt(p.latest)}</td>
-      <td><span class="${trend >= 0 ? 'up' : 'down'}">${trend > 0 ? '+' : ''}${trend.toFixed(1)}%</span></td>
-      <td><span class="muted">${fmt(p.min_90d)} – ${fmt(p.max_90d)}</span></td>
-      <td><button class="btn btn-danger btn-sm" onclick="deleteProduct(${p.id}, '${esc(p.name)}')">✕</button></td>
-    </tr>`;
-  }).join('');
+      <td class="${p.trend >= 0 ? 'up' : 'down'}">${p.trend > 0 ? '+' : ''}${p.trend.toFixed(1)}%</td>
+      <td class="${p.chg90 != null && p.chg90 >= 0 ? 'up' : 'down'}">${p.chg90 != null ? (p.chg90 > 0 ? '+' : '') + p.chg90.toFixed(1) + '%' : '—'}</td>
+      <td class="muted">${p.snaps}</td>
+      <td><button class="btn btn-danger btn-sm" onclick="deleteProduct(${p.id},'${esc(p.name)}')">✕</button></td></tr>`
+  ).join('');
 
-  // Populate chart select
-  const sel = document.getElementById('prodChartSelect');
+  const sel = document.getElementById('chartSelect');
   const cur = sel.value;
   sel.innerHTML = '<option value="">Select a product…</option>' +
-    products.map(p => `<option value="${p.id}" ${p.id == cur ? 'selected' : ''}>${esc(p.name)}</option>`).join('');
+    prods.map(p => `<option value="${p.id}" ${p.id == cur ? 'selected' : ''}>${esc(p.name)}</option>`).join('');
 }
-
-function populateProductSelects() {
-  const opts = products.map(p => `<option value="${p.id}">${esc(p.name)}</option>`).join('');
-  document.getElementById('mpProduct').innerHTML = '<option value="">Choose…</option>' + opts;
-  document.getElementById('editPfAddSelect').innerHTML = '<option value="">Select product to add…</option>' + opts;
-}
-
-function populateReportSelect() {
-  document.getElementById('reportSelect').innerHTML = '<option value="">Choose a portfolio…</option>' +
-    portfolios.map(p => `<option value="${esc(p.name)}">${esc(p.name)}</option>`).join('');
-}
-
-async function deleteProduct(id, name) {
-  if (!confirm(`Delete "${name}"?\nThis will remove all price data.`)) return;
-  await fetch(`/api/products/${id}`, { method: 'DELETE' });
-  await loadAll();
-}
-
-async function seedDemo() {
-  await fetch('/api/seed');
-  await loadAll();
-}
-
-// ══════════════════════════════════════════════════════
-// Product Chart
-// ══════════════════════════════════════════════════════
-
-async function loadProductChart() {
-  const id = document.getElementById('prodChartSelect').value;
-  if (!id) return;
-  const r = await fetch(`/api/products/${id}`);
-  const p = await r.json();
-  if (!p.history) return;
-
-  const ctx = document.getElementById('prodChart').getContext('2d');
-  if (productChart) productChart.destroy();
-
-  const dates = p.history.map(h => h.date);
-  productChart = new Chart(ctx, {
-    type: 'line',
-    data: {
-      labels: dates,
-      datasets: [
-        { label: 'Avg Price', data: p.history.map(h => h.avg), borderColor: '#00d4aa',
-          fill: true, backgroundColor: 'rgba(0,212,170,0.1)', tension: 0.3, pointRadius: 2 },
-        { label: 'Low Price', data: p.history.map(h => h.low), borderColor: '#ff6b6b',
-          tension: 0.3, pointRadius: 1, borderDash: [4,4] },
-      ]
-    },
-    options: {
-      responsive: true,
-      plugins: {
-        title: { display: true, text: p.name, color: '#e0e0e0', font: { size: 14 } },
-        legend: { labels: { color: '#888' } }
-      },
-      scales: {
-        x: { ticks: { color: '#888', maxTicksLimit: 12, maxRotation: 30 } },
-        y: { ticks: { color: '#888' }, grid: { color: '#1e1e30' } }
-      }
-    }
-  });
-}
-
-// ══════════════════════════════════════════════════════
-// Portfolios Tab
-// ══════════════════════════════════════════════════════
 
 function renderPortfolios() {
-  const el = document.getElementById('portfolioList');
-  if (portfolios.length === 0) {
-    el.innerHTML = '<p class="muted">No portfolios yet. Create one above.</p>';
-    return;
-  }
-  el.innerHTML = portfolios.map(pf => {
-    const prods = pf.products || [];
-    const totalQty = prods.reduce((s, p) => s + (p.qty || 1), 0);
-    return `<div class="card" style="cursor:pointer" onclick="editPortfolio('${esc(pf.name)}')">
-      <div class="flex" style="justify-content:space-between">
-        <div>
-          <h3 style="margin:0">📂 ${esc(pf.name)}</h3>
-          ${pf.description ? `<span class="muted">${esc(pf.description)}</span>` : ''}
-        </div>
-        <div class="text-right">
-          <span class="badge">${totalQty} units</span>
-          <span class="badge">${prods.length} products</span>
-        </div>
-      </div>
-      <div class="mt flex" style="gap:0.5rem;flex-wrap:wrap">
-        ${prods.map(p => `<span class="qty-badge">${p.qty || 1}</span>
-          <span style="font-size:0.85rem">${esc(p.name)}</span>`).join('')}
-      </div>
-    </div>`;
-  }).join('');
+  renderPortfolios(); // already defined above
 }
 
-function editPortfolio(name) {
-  editingPfName = name;
-  const pf = portfolios.find(p => p.name === name);
-  if (!pf) return;
-  document.getElementById('editPfTitle').textContent = '✏️ ' + name;
-  document.getElementById('editPfDesc').value = pf.description || '';
-  renderEditPfProducts(pf);
-  document.getElementById('modal-edit-pf').classList.remove('hidden');
+function populateReportSel() {
+  populateReportSel(); // already defined
 }
 
-function renderEditPfProducts(pf) {
-  const el = document.getElementById('editPfProducts');
-  const prods = pf.products || [];
-  if (prods.length === 0) {
-    el.innerHTML = '<p class="muted">No products in this portfolio.</p>';
-    return;
-  }
-  el.innerHTML = `<table><thead><tr><th>Product</th><th>Qty</th><th></th></tr></thead><tbody>
-    ${prods.map((p, i) => `<tr>
-      <td>${esc(p.name)}</td>
-      <td><input type="number" value="${p.qty || 1}" min="0" step="1"
-           onchange="updatePfQty(${i}, this.value)" style="width:60px"></td>
-      <td><button class="btn btn-danger btn-sm" onclick="removePfProduct(${i})">✕</button></td>
-    </tr>`).join('')}
-  </tbody></table>`;
-}
-
-async function updatePfQty(idx, val) {
-  const pf = portfolios.find(p => p.name === editingPfName);
-  if (!pf) return;
-  const qty = parseInt(val) || 1;
-  if (qty <= 0) {
-    pf.products.splice(idx, 1);
-  } else {
-    pf.products[idx].qty = qty;
-  }
-  await savePortfolioChanges(pf);
-  renderEditPfProducts(pf);
-}
-
-async function removePfProduct(idx) {
-  const pf = portfolios.find(p => p.name === editingPfName);
-  if (!pf) return;
-  pf.products.splice(idx, 1);
-  await savePortfolioChanges(pf);
-  renderEditPfProducts(pf);
-}
-
-async function addProductToEditPf() {
-  const sel = document.getElementById('editPfAddSelect');
-  const qty = parseInt(document.getElementById('editPfAddQty').value) || 1;
-  const pid = sel.value;
-  if (!pid) return;
-  const prod = products.find(p => p.id == pid);
-  if (!prod) return;
-  const pf = portfolios.find(p => p.name === editingPfName);
-  if (!pf) return;
-  pf.products = pf.products || [];
-  const exist = pf.products.find(p => p.name === prod.name);
-  if (exist) {
-    exist.qty += qty;
-  } else {
-    pf.products.push({ name: prod.name, qty });
-  }
-  await savePortfolioChanges(pf);
-  renderEditPfProducts(pf);
-  sel.value = '';
-}
-
-async function savePortfolioChanges(pf) {
-  await fetch(`/api/portfolios/${encodeURIComponent(pf.name)}`, {
-    method: 'PUT',
-    headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify({ products: pf.products, description: pf.description }),
-  });
-  await loadPortfolios();
+function refreshAll() {
+  renderDashboard();
+  renderProducts();
   renderPortfolios();
-  populateReportSelect();
+  populateReportSel();
 }
 
-async function deleteCurrentPortfolio() {
-  if (!confirm(`Delete portfolio "${editingPfName}"?`)) return;
-  await fetch(`/api/portfolios/${encodeURIComponent(editingPfName)}`, { method: 'DELETE' });
-  closeModalById('modal-edit-pf');
-  await loadAll();
-}
+// ═══════════════════════════════════════════════════════════
+// EXPORT / IMPORT
+// ═══════════════════════════════════════════════════════════
 
-// ══════════════════════════════════════════════════════
-// Report Tab
-// ══════════════════════════════════════════════════════
-
-function downloadReport() {
-  const sel = document.getElementById('reportSelect');
-  const days = document.getElementById('reportDays').value;
-  const name = sel.value;
-  if (!name) { alert('Select a portfolio first'); return; }
-  const url = `/api/portfolios/${encodeURIComponent(name)}/report?days=${days}`;
+function downloadFile(content, filename, mime) {
+  const blob = new Blob([content], { type: mime });
   const a = document.createElement('a');
-  a.href = url;
-  a.download = `portfolio_${name.toLowerCase().replace(/\s+/g, '_')}.html`;
+  a.href = URL.createObjectURL(blob);
+  a.download = filename;
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
+  URL.revokeObjectURL(a.href);
 }
 
-// ══════════════════════════════════════════════════════
-// Modal actions
-// ══════════════════════════════════════════════════════
-
-function showAddProduct() {
-  document.getElementById('apName').value = '';
-  document.getElementById('apId').value = '';
-  document.getElementById('apUrl').value = '';
-  document.getElementById('modal-add-product').classList.remove('hidden');
+function exportJSON() {
+  downloadFile(JSON.stringify(data, null, 2), 'mtg_tracker_backup.json', 'application/json');
+  toast('✅ Backup downloaded');
 }
 
-async function addProduct() {
-  const name = document.getElementById('apName').value.trim();
-  const id = document.getElementById('apId').value;
-  const url = document.getElementById('apUrl').value.trim();
-  if (!name && !id) { alert('Enter a name or ID'); return; }
-  const r = await fetch('/api/products', {
-    method: 'POST',
-    headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify({ name, id: id ? parseInt(id) : null, url }),
-  });
-  const res = await r.json();
-  if (res.error) { alert(res.error); return; }
-  closeModalById('modal-add-product');
-  await loadAll();
+function importJSON(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    try {
+      const imported = JSON.parse(e.target.result);
+      // Validate
+      if (imported.products && imported.snapshots && imported.portfolios) {
+        if (confirm('Replace all current data with the backup?')) {
+          data = imported;
+          saveData();
+          toast('✅ Backup restored');
+          refreshAll();
+        }
+      } else {
+        toast('❌ Invalid backup file', true);
+      }
+    } catch(err) { toast('❌ Could not read file', true); }
+  };
+  reader.readAsText(file);
+  event.target.value = '';
 }
 
-function showPriceEntry() {
-  populateProductSelects();
-  document.getElementById('mpPrice').value = '';
-  document.getElementById('modal-price').classList.remove('hidden');
-}
+// ═══════════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════════
 
-async function setPrice() {
-  const sel = document.getElementById('mpProduct');
-  const price = document.getElementById('mpPrice').value;
-  if (!sel.value || !price) { alert('Select a product and enter a price'); return; }
-  const prod = products.find(p => p.id == sel.value);
-  if (!prod) return;
-  const r = await fetch('/api/products/price', {
-    method: 'POST',
-    headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify({ name: prod.name, avg: parseFloat(price) }),
-  });
-  const res = await r.json();
-  if (res.error) { alert(res.error); return; }
-  closeModalById('modal-price');
-  await loadAll();
-}
-
-function showCreatePortfolio() {
-  document.getElementById('cpName').value = '';
-  document.getElementById('cpDesc').value = '';
-  document.getElementById('modal-create-pf').classList.remove('hidden');
-}
-
-async function createPortfolio() {
-  const name = document.getElementById('cpName').value.trim();
-  if (!name) { alert('Enter a name'); return; }
-  const r = await fetch('/api/portfolios', {
-    method: 'POST',
-    headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify({ name, description: document.getElementById('cpDesc').value.trim() }),
-  });
-  const res = await r.json();
-  if (res.error) { alert(res.error); return; }
-  closeModalById('modal-create-pf');
-  await loadAll();
-}
-
-// ══════════════════════════════════════════════════════
-// Helpers
-// ══════════════════════════════════════════════════════
-
-function closeModal(event, id) {
-  if (event.target.classList.contains('modal-backdrop')) {
-    document.getElementById(id).classList.add('hidden');
-  }
-}
-function closeModalById(id) {
-  document.getElementById(id).classList.add('hidden');
-}
-function fmt(v) {
-  if (v == null) return '—';
-  return '€' + Number(v).toFixed(2);
-}
-function esc(s) {
-  if (!s) return '';
-  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
-          .replace(/"/g,'&quot;').replace(/'/g,'&#039;');
-}
+refreshAll();
 </script>
 </body>
 </html>

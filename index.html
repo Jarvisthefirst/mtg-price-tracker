@@ -16,8 +16,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .topbar nav button.active{background:#00d4aa;color:#0f0f1a;border-color:#00d4aa;font-weight:600}
 .container{max-width:1100px;margin:0 auto;padding:1.2rem}
 .hidden{display:none!important}
-.card{background:#1a1a2e;border-radius:12px;padding:1.1rem;margin-bottom:1rem;border:1px solid transparent}
-.card:hover{border-color:#2d2d44}
+.card{background:#1a1a2e;border-radius:12px;padding:1.1rem;margin-bottom:1rem}
 .card h3{color:#ffd93d;margin-bottom:0.6rem;font-size:1rem}
 .row{display:flex;gap:1rem;flex-wrap:wrap}
 .col{flex:1;min-width:280px}
@@ -34,6 +33,7 @@ tr:hover td{background:#16213e}
 .btn-outline{background:transparent;border:1px solid #2d2d44;color:#888}
 .btn-outline:hover{border-color:#00d4aa;color:#00d4aa}
 .btn-success{background:#00b894;color:white}
+.btn-warning{background:#ffd93d;color:#0f0f1a}
 .gap{display:flex;gap:0.5rem;flex-wrap:wrap;align-items:center}
 input,select{background:#16213e;border:1px solid #2d2d44;color:#e0e0e0;padding:0.38rem 0.65rem;border-radius:6px;font-size:0.88rem;width:100%}
 input:focus,select:focus{border-color:#00d4aa;outline:none}
@@ -44,6 +44,9 @@ label{display:block;font-size:0.78rem;color:#888;margin-bottom:0.25rem}
 .mt{margin-top:0.8rem}.mb{margin-bottom:0.8rem}
 .chart-wrap{width:100%;max-width:700px;margin:0.8rem auto}
 .scroll{overflow-x:auto}
+.empty-box{text-align:center;padding:2rem;color:#555}
+.empty-box .big{font-size:2.5rem;margin-bottom:0.5rem}
+.empty-box p{margin-bottom:0.8rem;font-size:0.9rem}
 .pf-card{background:#1a1a2e;border-radius:12px;padding:1rem;margin:0.7rem 0;cursor:pointer;transition:0.15s;border:1px solid #2d2d44}
 .pf-card:hover{border-color:#00d4aa}
 .pf-card .prods{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:0.5rem}
@@ -55,6 +58,11 @@ label{display:block;font-size:0.78rem;color:#888;margin-bottom:0.25rem}
 .modal h2{color:#00d4aa;margin-bottom:0.8rem;font-size:1.1rem}
 .modal .g{gap:0.5rem;margin-top:0.8rem;justify-content:flex-end}
 .empty{text-align:center;color:#555;padding:2rem;font-size:0.9rem}
+.datalist-wrap{position:relative}
+.datalist-wrap input{width:100%}
+.datalist-wrap .suggestions{position:absolute;top:100%;left:0;right:0;background:#1a1a2e;border:1px solid #2d2d44;border-radius:0 0 8px 8px;max-height:200px;overflow-y:auto;z-index:50;display:none}
+.datalist-wrap .suggestions div{padding:0.5rem 0.7rem;cursor:pointer;font-size:0.85rem;border-bottom:1px solid #1e1e30}
+.datalist-wrap .suggestions div:hover,.datalist-wrap .suggestions div.highlight{background:#16213e;color:#00d4aa}
 </style>
 </head>
 <body>
@@ -66,8 +74,8 @@ label{display:block;font-size:0.78rem;color:#888;margin-bottom:0.25rem}
     <button data-tab="products">Products</button>
     <button data-tab="portfolios">Portfolios</button>
     <button data-tab="report">Report</button>
-    <button class="btn-outline btn-sm" onclick="exportJSON()" title="Download backup">💾</button>
-    <button class="btn-outline btn-sm" onclick="document.getElementById('importFile').click()" title="Restore backup">📂</button>
+    <button class="btn-outline btn-sm" onclick="exportJSON()" title="Backup">💾</button>
+    <button class="btn-outline btn-sm" onclick="document.getElementById('importFile').click()" title="Restore">📂</button>
     <input type="file" id="importFile" accept=".json" hidden onchange="importJSON(event)">
   </nav>
 </div>
@@ -79,7 +87,7 @@ label{display:block;font-size:0.78rem;color:#888;margin-bottom:0.25rem}
   <div class="row mb">
     <div class="col">
       <div class="card"><h3>📈 Overview</h3>
-        <div id="dashSummary" class="muted mb">No products yet.</div>
+        <div id="dashSummary"></div>
         <div class="chart-wrap"><canvas id="dashChart"></canvas></div>
       </div>
     </div>
@@ -90,11 +98,9 @@ label{display:block;font-size:0.78rem;color:#888;margin-bottom:0.25rem}
   <div class="card">
     <div class="gap"><h3>📦 All Products</h3>
       <button class="btn btn-primary btn-sm" onclick="openAddProduct()">+ Add</button>
-      <button class="btn btn-outline btn-sm" onclick="seedDemo()">Seed Demo</button>
+      <button class="btn btn-warning btn-sm" onclick="seedDemo()">⚡ Seed Demo</button>
     </div>
-    <div class="scroll"><table><thead><tr>
-      <th>Name</th><th>Latest</th><th>90d Avg</th><th>90d Min</th><th>90d Max</th><th>Trend</th><th></th>
-    </tr></thead><tbody id="dashTbody"></tbody></table></div>
+    <div id="dashTable"></div>
   </div>
 </div>
 
@@ -103,19 +109,18 @@ label{display:block;font-size:0.78rem;color:#888;margin-bottom:0.25rem}
   <div class="card">
     <div class="gap"><h3>📦 Product Manager</h3>
       <button class="btn btn-primary btn-sm" onclick="openAddProduct()">+ Add</button>
-      <button class="btn btn-outline btn-sm" onclick="openSetPrice()">💰 Price</button>
+      <button class="btn btn-outline btn-sm" onclick="openSetPrice()">💰 Set Price</button>
     </div>
-    <div class="scroll"><table><thead><tr>
-      <th>Name</th><th>Latest</th><th>Trend</th><th>90d Δ</th><th>Snaps</th><th></th>
-    </tr></thead><tbody id="prodTbody"></tbody></table></div>
+    <div id="prodContent"></div>
   </div>
   <div class="card">
     <div class="gap"><h3>📈 Price Chart</h3>
-      <select id="chartSelect" style="width:auto;flex:1;max-width:350px" onchange="drawProductChart()">
-        <option value="">Select a product…</option>
-      </select>
+      <input id="chartInput" placeholder="Search product..." style="width:auto;flex:1;max-width:350px" oninput="onChartSearch()">
+      <div id="chartSuggestions"></div>
     </div>
-    <div class="chart-wrap"><canvas id="prodChart"></canvas></div>
+    <div class="chart-wrap" style="position:relative"><canvas id="prodChart"></canvas>
+      <div id="chartEmpty" class="empty-box"><div class="big">📈</div><p>Select a product above to see its price history.</p></div>
+    </div>
   </div>
 </div>
 
@@ -134,10 +139,8 @@ label{display:block;font-size:0.78rem;color:#888;margin-bottom:0.25rem}
   <div class="row">
     <div class="col">
       <div class="card"><h3>📄 Generate HTML Report</h3>
-        <div class="mt"><label>Portfolio</label>
-          <select id="reportSel"><option value="">Choose…</option></select></div>
-        <div class="mt"><label>Lookback (days)</label>
-          <input type="number" id="reportDays" value="90" min="7" max="365"></div>
+        <div class="mt"><label>Portfolio</label><select id="reportSel"><option value="">Choose…</option></select></div>
+        <div class="mt"><label>Lookback (days)</label><input type="number" id="reportDays" value="90" min="7" max="365"></div>
         <button class="btn btn-primary mt" onclick="generateReport()">⬇ Download Report</button>
       </div>
     </div>
@@ -155,47 +158,53 @@ label{display:block;font-size:0.78rem;color:#888;margin-bottom:0.25rem}
 
 </div>
 
-<!-- ════════ MODALS ════════ -->
-
+<!-- ═══ MODALS ═══ -->
 <div id="modal-add-product" class="modal-overlay hidden" onclick="closeModal(event,this)">
-  <div class="modal" onclick="ev.stopPropagation(event)" id="modal-ap">
+  <div class="modal" onclick="event.stopPropagation()">
     <h2>➕ Add Product</h2>
-    <div><label>Product Name</label><input id="apName" placeholder="e.g. Modern Horizons 3 Play Booster Box"></div>
-    <div class="mt"><label>Current Price (€) — optional</label><input id="apPrice" type="number" step="0.01" min="0" placeholder="Leave empty to add without price"></div>
+    <div><label>Product Name</label><input id="apName" placeholder="e.g. Modern Horizons 3"></div>
+    <div class="mt"><label>Current Price (€)</label><input id="apPrice" type="number" step="0.01" min="0" placeholder="Enter a price, or leave empty"></div>
     <div class="gap g"><button class="btn btn-outline" onclick="closeModalById('modal-add-product')">Cancel</button>
       <button class="btn btn-primary" onclick="addProduct()">Add</button></div>
   </div>
 </div>
 
 <div id="modal-set-price" class="modal-overlay hidden" onclick="closeModal(event,this)">
-  <div class="modal" onclick="ev.stopPropagation(event)" id="modal-sp">
+  <div class="modal" onclick="event.stopPropagation()">
     <h2>💰 Set Price</h2>
-    <div><label>Product</label><select id="spSel"></select></div>
-    <div class="mt"><label>Price (€)</label><input id="spPrice" type="number" step="0.01" min="0"></div>
+    <div class="datalist-wrap">
+      <label>Product</label>
+      <input id="spInput" placeholder="Type to search..." oninput="onSuggest(event,'spInput','spSuggestions')" onfocus="onSuggest(event,'spInput','spSuggestions')">
+      <div class="suggestions" id="spSuggestions"></div>
+    </div>
+    <div class="mt"><label>Price (€)</label><input id="spPrice" type="number" step="0.01" min="0" placeholder="Current market price"></div>
     <div class="gap g"><button class="btn btn-outline" onclick="closeModalById('modal-set-price')">Cancel</button>
-      <button class="btn btn-primary" onclick="setPrice()">Save</button></div>
+      <button class="btn btn-primary" onclick="setPrice()">Save Price</button></div>
   </div>
 </div>
 
 <div id="modal-create-pf" class="modal-overlay hidden" onclick="closeModal(event,this)">
-  <div class="modal" onclick="ev.stopPropagation(event)" id="modal-cp">
+  <div class="modal" onclick="event.stopPropagation()">
     <h2>📂 Create Portfolio</h2>
     <div><label>Portfolio Name</label><input id="cpName" placeholder="e.g. My Collection"></div>
-    <div class="mt"><label>Description (optional)</label><input id="cpDesc" placeholder="Describe it"></div>
+    <div class="mt"><label>Description (optional)</label><input id="cpDesc" placeholder="e.g. Standard display boxes I'm holding"></div>
     <div class="gap g"><button class="btn btn-outline" onclick="closeModalById('modal-create-pf')">Cancel</button>
       <button class="btn btn-primary" onclick="createPortfolio()">Create</button></div>
   </div>
 </div>
 
 <div id="modal-edit-pf" class="modal-overlay hidden" onclick="closeModal(event,this)">
-  <div class="modal" style="min-width:480px" onclick="ev.stopPropagation(event)" id="modal-ep">
+  <div class="modal" style="min-width:480px" onclick="event.stopPropagation()">
     <h2 id="epTitle">✏️ Edit Portfolio</h2>
-    <div class="mt"><label>Description</label><input id="epDesc" placeholder="Description" onchange="savePfDesc()"></div>
+    <div><label>Description</label><input id="epDesc" placeholder="Description" onchange="savePfDesc()"></div>
     <div class="mt"><label>Products</label><div id="epProducts"></div></div>
     <div class="gap mt">
-      <select id="epAddSel" style="flex:1"><option value="">Select product…</option></select>
-      <input id="epAddQty" type="number" value="1" min="1" style="width:65px" placeholder="Qty">
-      <button class="btn btn-primary btn-sm" onclick="epAddProduct()">+ Add</button>
+      <div class="datalist-wrap" style="flex:1">
+        <input id="epAddInput" placeholder="Type to search products..." oninput="onSuggest(event,'epAddInput','epAddSuggestions')" onfocus="onSuggest(event,'epAddInput','epAddSuggestions')">
+        <div class="suggestions" id="epAddSuggestions"></div>
+      </div>
+      <input id="epAddQty" type="number" value="1" min="1" style="width:60px" placeholder="Qty">
+      <button class="btn btn-success btn-sm" onclick="epAddProduct()">+ Add</button>
     </div>
     <div class="gap g">
       <button class="btn btn-outline" onclick="closeModalById('modal-edit-pf')">Close</button>
@@ -206,29 +215,25 @@ label{display:block;font-size:0.78rem;color:#888;margin-bottom:0.25rem}
 
 <script>
 // ═══════════════════════════════════════════════════════════
-// DATA LAYER (localStorage)
+// DATA LAYER
 // ═══════════════════════════════════════════════════════════
 
 const STORAGE_KEY = 'mtg_tracker_data';
 let data = { products: {}, snapshots: {}, portfolios: [] };
 let charts = {};
+let _nameCounter = 0; // unique ID counter
 
 function saveData() {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-  } catch(e) { console.error('save failed', e); }
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch(e) { console.error('save', e); }
 }
-
 function loadData() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw) { data = JSON.parse(raw); }
-  } catch(e) { console.error('load failed', e); }
-  // Ensure structure
+    if (raw) data = JSON.parse(raw);
+  } catch(e) { console.error('load', e); }
   if (!data.products) data.products = {};
   if (!data.snapshots) data.snapshots = {};
   if (!data.portfolios) data.portfolios = [];
-  // Migrate old portfolio format
   data.portfolios.forEach(pf => {
     if (pf.product_names && !pf.products) {
       pf.products = pf.product_names.map(n => ({name: n, qty: 1}));
@@ -236,8 +241,8 @@ function loadData() {
     }
     if (!pf.products) pf.products = [];
   });
+  _nameCounter = Object.keys(data.products).length;
 }
-
 loadData();
 
 // ═══════════════════════════════════════════════════════════
@@ -249,13 +254,37 @@ function esc(s) { if(!s)return''; return s.replace(/&/g,'&amp;').replace(/</g,'&
 function today() { return new Date().toISOString().slice(0,10); }
 function toast(msg, isErr) {
   const t = document.createElement('div');
-  t.className = 'toast' + (isErr ? ' toast-error' : '');
-  t.textContent = msg;
+  t.className = 'toast' + (isErr ? ' toast-error' : ''); t.textContent = msg;
   document.body.appendChild(t);
   setTimeout(() => t.remove(), 3000);
 }
 function closeModal(evt, el) { if(evt.target.classList.contains('modal-overlay')) el.classList.add('hidden'); }
 function closeModalById(id) { document.getElementById(id).classList.add('hidden'); }
+
+function hasAnyPrice() {
+  for (const id in data.snapshots) {
+    const snaps = data.snapshots[id];
+    if (snaps && snaps.length) return true;
+  }
+  return false;
+}
+
+function getProducts() {
+  return Object.entries(data.products).map(([id, p]) => {
+    const snaps = data.snapshots[id] || [];
+    const prices = snaps.filter(s => s.avg != null).map(s => s.avg);
+    const latest = prices.length ? prices[prices.length - 1] : null;
+    const p90 = prices.slice(-91);
+    const avg90 = p90.length ? p90.reduce((a,b)=>a+b,0)/p90.length : null;
+    const min90 = p90.length ? Math.min(...p90) : null;
+    const max90 = p90.length ? Math.max(...p90) : null;
+    const first90 = p90.length ? p90[0] : null;
+    const chg90 = (latest != null && first90 != null && first90 !== 0) ? ((latest-first90)/first90*100) : null;
+    const trend = (prices.length >= 2) ? ((latest - prices[prices.length-2]) / prices[prices.length-2] * 100) : null;
+    return { id: parseInt(id), name: p.name, latest, avg90, min90, max90, chg90, trend, snaps: prices.length,
+             history: snaps.map(s => ({date:s.date, avg:s.avg, low:s.low})) };
+  }).sort((a,b) => a.name.localeCompare(b.name));
+}
 
 // ═══════════════════════════════════════════════════════════
 // TAB SWITCHING
@@ -263,46 +292,72 @@ function closeModalById(id) { document.getElementById(id).classList.add('hidden'
 
 document.querySelectorAll('[data-tab]').forEach(b => {
   b.addEventListener('click', () => {
-    document.querySelectorAll('.tab-content, [id^="tab-"]').forEach(el => el.classList.add('hidden'));
+    document.querySelectorAll('#tab-dashboard,#tab-products,#tab-portfolios,#tab-report').forEach(el => el.classList.add('hidden'));
     document.getElementById('tab-' + b.dataset.tab).classList.remove('hidden');
     document.querySelectorAll('[data-tab]').forEach(x => x.classList.remove('active'));
     b.classList.add('active');
     if (b.dataset.tab === 'dashboard') renderDashboard();
-    if (b.dataset.tab === 'products') { renderProducts(); drawProductChart(); }
+    if (b.dataset.tab === 'products') { renderProducts(); onChartSearch(); }
     if (b.dataset.tab === 'portfolios') renderPortfolios();
     if (b.dataset.tab === 'report') populateReportSel();
   });
 });
 
 // ═══════════════════════════════════════════════════════════
+// AUTOCOMPLETE
+// ═══════════════════════════════════════════════════════════
+
+function onSuggest(evt, inputId, suggestId) {
+  const inp = document.getElementById(inputId);
+  const sug = document.getElementById(suggestId);
+  const q = inp.value.toLowerCase().trim();
+  const prods = getProducts().filter(p => !q || p.name.toLowerCase().includes(q));
+  if (!prods.length) { sug.style.display = 'none'; return; }
+  sug.innerHTML = prods.slice(0, 10).map((p, i) =>
+    `<div data-id="${p.id}" data-name="${esc(p.name)}" class="${i===0?'highlight':''}"
+      onclick="selectSuggest('${inputId}','${suggestId}',${p.id},'${esc(p.name)}')">${esc(p.name).replace(new RegExp(esc(q),'gi'), m => '<span style="color:#00d4aa">'+m+'</span>')}</div>`
+  ).join('');
+  sug.style.display = 'block';
+  // Keyboard navigation
+  if (evt && evt.key === 'ArrowDown') { evt.preventDefault(); moveHighlight(suggestId, 1); }
+  if (evt && evt.key === 'ArrowUp') { evt.preventDefault(); moveHighlight(suggestId, -1); }
+  if (evt && evt.key === 'Enter') {
+    evt.preventDefault();
+    const hl = sug.querySelector('.highlight');
+    if (hl) { hl.click(); }
+    else { sug.style.display = 'none'; }
+  }
+  if (evt && evt.key === 'Escape') { sug.style.display = 'none'; }
+}
+function moveHighlight(suggestId, dir) {
+  const sug = document.getElementById(suggestId);
+  const items = sug.querySelectorAll('div');
+  let idx = -1;
+  items.forEach((d, i) => { if (d.classList.contains('highlight')) idx = i; });
+  items.forEach(d => d.classList.remove('highlight'));
+  const ni = Math.max(0, Math.min(items.length - 1, idx + dir));
+  if (items[ni]) items[ni].classList.add('highlight');
+}
+function selectSuggest(inputId, suggestId, id, name) {
+  document.getElementById(inputId).value = name;
+  document.getElementById(inputId).dataset.selectedId = id;
+  document.getElementById(inputId).dataset.selectedName = name;
+  document.getElementById(suggestId).style.display = 'none';
+}
+
+// ═══════════════════════════════════════════════════════════
 // PRODUCTS
 // ═══════════════════════════════════════════════════════════
 
-function getProducts() {
-  return Object.entries(data.products).map(([id, p]) => {
-    const snaps = data.snapshots[id] || [];
-    const prices = snaps.filter(s => s.avg != null).map(s => s.avg);
-    const latest = prices.length ? prices[prices.length - 1] : null;
-    const first90 = prices.length > 1 ? prices[Math.max(0, prices.length - 91)] : prices[0] || null;
-    const p90 = prices.slice(-91);
-    const avg90 = p90.length ? p90.reduce((a,b)=>a+b,0)/p90.length : null;
-    const min90 = p90.length ? Math.min(...p90) : null;
-    const max90 = p90.length ? Math.max(...p90) : null;
-    const chg90 = (latest != null && first90 != null && first90 !== 0) ? ((latest-first90)/first90*100) : null;
-    const trend = (prices.length >= 2) ? ((latest - prices[prices.length-2]) / prices[prices.length-2] * 100) : 0;
-    return { id: parseInt(id), name: p.name, latest, avg90, min90, max90, chg90, trend, snaps: prices.length, history: snaps.map(s => ({date:s.date, avg:s.avg, low:s.low})) };
-  }).sort((a,b) => a.name.localeCompare(b.name));
-}
-
 function addProduct() {
   const name = document.getElementById('apName').value.trim();
-  const price = document.getElementById('apPrice').value;
   if (!name) { toast('Enter a name', true); return; }
-  // Check for duplicate
   if (Object.values(data.products).some(p => p.name.toLowerCase() === name.toLowerCase())) {
-    toast('Product already exists', true); return;
+    toast('Product "' + name + '" already exists', true); return;
   }
-  const id = Date.now();
+  const price = document.getElementById('apPrice').value;
+  _nameCounter++;
+  const id = _nameCounter;
   data.products[id] = { name };
   if (price) {
     const val = parseFloat(price);
@@ -311,7 +366,7 @@ function addProduct() {
   }
   saveData();
   closeModalById('modal-add-product');
-  toast('✅ Added: ' + name);
+  toast((price ? '✅ ' : '➕ ') + name + (price ? ' — €' + parseFloat(price).toFixed(2) : ''));
   refreshAll();
 }
 
@@ -322,30 +377,45 @@ function openAddProduct() {
 }
 
 function openSetPrice() {
-  const sel = document.getElementById('spSel');
-  sel.innerHTML = '<option value="">Choose…</option>' +
-    getProducts().map(p => `<option value="${p.id}">${esc(p.name)}</option>`).join('');
+  document.getElementById('spInput').value = '';
+  document.getElementById('spInput').dataset.selectedId = '';
+  document.getElementById('spInput').dataset.selectedName = '';
   document.getElementById('spPrice').value = '';
+  document.getElementById('spSuggestions').style.display = 'none';
   document.getElementById('modal-set-price').classList.remove('hidden');
+  // Show suggestions immediately
+  setTimeout(() => onSuggest({}, 'spInput', 'spSuggestions'), 100);
 }
 
 function setPrice() {
-  const id = document.getElementById('spSel').value;
+  const name = document.getElementById('spInput').dataset.selectedName || document.getElementById('spInput').value.trim();
   const price = document.getElementById('spPrice').value;
-  if (!id || !price) { toast('Select product and enter price', true); return; }
+  if (!name) { toast('Select a product', true); return; }
+  if (!price) { toast('Enter a price', true); return; }
+  // Find product
+  let prod = Object.entries(data.products).find(([id, p]) => p.name.toLowerCase() === name.toLowerCase());
+  if (!prod) {
+    prod = Object.entries(data.products).find(([id, p]) => p.name.toLowerCase().includes(name.toLowerCase()));
+  }
+  if (!prod) { toast('Product not found: ' + name, true); return; }
+  const [id] = prod;
   const val = parseFloat(price);
   if (!data.snapshots[id]) data.snapshots[id] = [];
   data.snapshots[id].push({ date: today(), avg: val, low: null });
   saveData();
   closeModalById('modal-set-price');
-  toast('✅ Price recorded: ' + data.products[id].name);
+  toast('💰 ' + prod[1].name + ' = €' + val.toFixed(2));
   refreshAll();
 }
 
 function deleteProduct(id, name) {
-  if (!confirm(`Delete "${name}" and all its price history?`)) return;
+  if (!confirm('Delete "' + name + '" and all its price history?')) return;
   delete data.products[id];
   delete data.snapshots[id];
+  // Remove from portfolios
+  data.portfolios.forEach(pf => {
+    pf.products = pf.products.filter(p => p.name !== name);
+  });
   saveData();
   toast('🗑️ Deleted: ' + name);
   refreshAll();
@@ -362,18 +432,18 @@ function seedDemo() {
     ['Innistrad Remastered Play Booster Box', 140, +0.04],
     ['Bloomburrow Play Booster Box', 110, -0.10],
   ];
-  const seed = 42;
-  let rng = seed;
-  function rnd() { rng = (rng * 16807) % 2147483647; return (rng - 1) / 2147483646; }
-  function gauss() { const u=0,v=0; let a,b,s; do{a=rnd()*2-1;b=rnd()*2-1;s=a*a+b*b}while(s>=1);return a*Math.sqrt(-2*Math.log(s)/s); }
+  let s = 42;
+  function rnd() { s = (s * 16807) % 2147483647; return (s - 1) / 2147483646; }
+  function gauss() { let a,b,ss; do{a=rnd()*2-1;b=rnd()*2-1;ss=a*a+b*b}while(ss>=1);return a*Math.sqrt(-2*Math.log(ss)/ss); }
 
-  // Clear existing
   data.products = {};
   data.snapshots = {};
-
+  _nameCounter = 0;
   const today_d = new Date();
+
   for (const [name, base, trendPct] of prods) {
-    const id = Date.now() + Math.floor(rnd() * 100000);
+    _nameCounter++;
+    const id = _nameCounter;
     data.products[id] = { name };
     data.snapshots[id] = [];
     for (let d = 90; d >= 0; d--) {
@@ -381,11 +451,11 @@ function seedDemo() {
       dt.setDate(dt.getDate() - d);
       const drift = trendPct * (90 - d) / 90 * base;
       const avg = Math.max(1, parseFloat((base + drift + gauss() * 4).toFixed(2)));
-      data.snapshots[id].push({ date: dt.toISOString().slice(0,10), avg, low: null });
+      data.snapshots[id].push({ date: dt.toISOString().slice(0, 10), avg, low: null });
     }
   }
   saveData();
-  toast('✅ Seeded 8 products × 91 days');
+  toast('✅ Seeded 8 products × 91 days of demo data');
   refreshAll();
 }
 
@@ -415,12 +485,12 @@ function createPortfolio() {
 function renderPortfolios() {
   const el = document.getElementById('pfList');
   if (!data.portfolios.length) {
-    el.innerHTML = '<div class="empty">No portfolios yet. Click "Create" above.</div>';
+    el.innerHTML = '<div class="empty-box"><div class="big">📂</div><p>No portfolios yet.</p><button class="btn btn-primary" onclick="openCreatePf()">+ Create Your First Portfolio</button></div>';
     return;
   }
   el.innerHTML = data.portfolios.map((pf, idx) => {
     const totalQty = pf.products.reduce((s, p) => s + (p.qty || 1), 0);
-    const prods = pf.products.slice(0, 6);
+    const prods = pf.products.slice(0, 8);
     return `<div class="pf-card" onclick="editPf(${idx})">
       <div class="gap" style="justify-content:space-between">
         <div><strong style="color:#ffd93d">📂 ${esc(pf.name)}</strong>
@@ -428,7 +498,7 @@ function renderPortfolios() {
         <div class="gap"><span class="badge">${totalQty} units</span><span class="badge">${pf.products.length} products</span></div>
       </div>
       <div class="prods">${prods.map(p => `<span class="badge-qty">${p.qty || 1}</span><span style="font-size:0.82rem">${esc(p.name)}</span>`).join('')}
-      ${pf.products.length > 6 ? '<span class="muted">…+' + (pf.products.length - 6) + ' more</span>' : ''}</div>
+      ${pf.products.length > 8 ? '<span class="muted">…+' + (pf.products.length - 8) + ' more</span>' : ''}</div>
     </div>`;
   }).join('');
 }
@@ -438,28 +508,31 @@ function editPf(idx) {
   if (!pf) return;
   document.getElementById('epTitle').textContent = '✏️ ' + pf.name;
   document.getElementById('epDesc').value = pf.description || '';
-  // Store index for callbacks
   document.getElementById('modal-edit-pf').dataset.idx = idx;
-  renderEpProducts(pf);
-  const sel = document.getElementById('epAddSel');
-  sel.innerHTML = '<option value="">Select product…</option>' +
-    getProducts().map(p => `<option value="${p.id}">${esc(p.name)}</option>`).join('');
+  document.getElementById('epAddInput').value = '';
+  document.getElementById('epAddInput').dataset.selectedId = '';
+  document.getElementById('epAddInput').dataset.selectedName = '';
+  document.getElementById('epAddSuggestions').style.display = 'none';
   document.getElementById('epAddQty').value = 1;
+  renderEpProducts(pf);
+  setTimeout(() => onSuggest({}, 'epAddInput', 'epAddSuggestions'), 100);
   document.getElementById('modal-edit-pf').classList.remove('hidden');
 }
 
 function renderEpProducts(pf) {
   const el = document.getElementById('epProducts');
-  if (!pf.products.length) {
-    el.innerHTML = '<p class="muted">No products in this portfolio.</p>'; return;
-  }
-  el.innerHTML = `<table><thead><tr><th>Product</th><th>Qty</th><th></th></tr></thead><tbody>
-    ${pf.products.map((p, i) => `<tr>
-      <td>${esc(p.name)}</td>
-      <td><input type="number" value="${p.qty || 1}" min="0" step="1" style="width:60px"
-           onchange="epUpdateQty(${i}, this.value)"></td>
-      <td><button class="btn btn-danger btn-sm" onclick="epRemove(${i})">✕</button></td>
-    </tr>`).join('')}
+  if (!pf.products.length) { el.innerHTML = '<p class="muted">No products yet. Search and add some!</p>'; return; }
+  el.innerHTML = `<table><thead><tr><th>Product</th><th>Qty</th><th>Subtotal</th><th></th></tr></thead><tbody>
+    ${pf.products.map((p, i) => {
+      const prod = getProducts().find(x => x.name === p.name);
+      const sub = prod && prod.latest != null ? prod.latest * (p.qty || 1) : null;
+      return `<tr>
+        <td>${esc(p.name)}</td>
+        <td><input type="number" value="${p.qty || 1}" min="0" step="1" style="width:55px" onchange="epUpdateQty(${i}, this.value)"></td>
+        <td>${sub != null ? fmt(sub) : '?'}</td>
+        <td><button class="btn btn-danger btn-sm" onclick="epRemove(${i})">✕</button></td>
+      </tr>`;
+    }).join('')}
   </tbody></table>`;
 }
 
@@ -468,8 +541,8 @@ function epUpdateQty(idx, val) {
   const pf = data.portfolios[ixf];
   if (!pf) return;
   const qty = parseInt(val) || 1;
-  if (qty <= 0) { pf.products.splice(idx, 1); }
-  else { pf.products[idx].qty = qty; }
+  if (qty <= 0) pf.products.splice(idx, 1);
+  else pf.products[idx].qty = qty;
   saveData();
   renderEpProducts(pf);
 }
@@ -487,19 +560,25 @@ function epAddProduct() {
   const ixf = parseInt(document.getElementById('modal-edit-pf').dataset.idx);
   const pf = data.portfolios[ixf];
   if (!pf) return;
-  const sel = document.getElementById('epAddSel');
+  let name = document.getElementById('epAddInput').dataset.selectedName || document.getElementById('epAddInput').value.trim();
   const qty = parseInt(document.getElementById('epAddQty').value) || 1;
-  const pid = sel.value;
-  if (!pid) { toast('Select a product', true); return; }
-  const prod = getProducts().find(p => p.id == pid);
-  if (!prod) return;
-  const exist = pf.products.find(p => p.name === prod.name);
+  if (!name) { toast('Type a product name', true); return; }
+  // Find product by name (exact or partial)
+  let prod = Object.entries(data.products).find(([id, p]) => p.name.toLowerCase() === name.toLowerCase());
+  if (!prod) {
+    prod = Object.entries(data.products).find(([id, p]) => p.name.toLowerCase().includes(name.toLowerCase()));
+    if (prod) name = prod[1].name;
+  }
+  if (!prod) { toast('"' + name + '" not found. Go to Products tab to add it first.', true); return; }
+  const exist = pf.products.find(p => p.name === name);
   if (exist) { exist.qty += qty; }
-  else { pf.products.push({ name: prod.name, qty }); }
+  else { pf.products.push({ name, qty }); }
   saveData();
   renderEpProducts(pf);
-  sel.value = '';
-  toast('➕ Added ' + prod.name + ' ×' + qty);
+  document.getElementById('epAddInput').value = '';
+  document.getElementById('epAddInput').dataset.selectedId = '';
+  document.getElementById('epAddInput').dataset.selectedName = '';
+  toast('➕ ' + name + ' ×' + qty);
 }
 
 function savePfDesc() {
@@ -513,7 +592,7 @@ function savePfDesc() {
 function deletePf() {
   const ixf = parseInt(document.getElementById('modal-edit-pf').dataset.idx);
   const pf = data.portfolios[ixf];
-  if (!pf || !confirm(`Delete portfolio "${pf.name}"?`)) return;
+  if (!pf || !confirm('Delete portfolio "' + pf.name + '"?')) return;
   data.portfolios.splice(ixf, 1);
   saveData();
   closeModalById('modal-edit-pf');
@@ -527,7 +606,7 @@ function deletePf() {
 
 function populateReportSel() {
   document.getElementById('reportSel').innerHTML = '<option value="">Choose a portfolio…</option>' +
-    data.portfolios.map(p => `<option value="${esc(p.name)}">${esc(p.name)}</option>`).join('');
+    data.portfolios.map(p => '<option value="' + esc(p.name) + '">' + esc(p.name) + '</option>').join('');
 }
 
 function generateReport() {
@@ -537,252 +616,224 @@ function generateReport() {
   const pf = data.portfolios.find(p => p.name === name);
   if (!pf || !pf.products.length) { toast('Portfolio is empty', true); return; }
 
-  const now = new Date().toISOString().slice(0,10).replace(/-/g,'-');
   const allProds = getProducts();
   const resolved = pf.products.map(pc => {
     const prod = allProds.find(p => p.name === pc.name);
-    return prod ? { ...prod, qty: pc.qty } : null;
+    return prod ? { ...prod, qty: pc.qty } : { name: pc.name, qty: pc.qty, id: null, latest: null, history: [], snaps: 0 };
   }).filter(Boolean);
-  if (!resolved.length) { toast('No tracked products found', true); return; }
 
   const cutoff = new Date();
   cutoff.setDate(cutoff.getDate() - days);
 
-  // Build series for chart
   const series = resolved.map(r => {
     const snaps = (data.snapshots[r.id] || []).filter(s => new Date(s.date) >= cutoff);
     return { name: r.name, qty: r.qty, data: snaps };
   });
 
-  // Get all dates
   const allDates = [...new Set(series.flatMap(s => s.data.map(d => d.date)))].sort();
+  const colors = ['#00d4aa','#ff6b6b','#ffd93d','#6c5ce7','#00b894','#e17055','#0984e3','#fdcb6e'];
 
-  // Build chart data
-  const chartLabels = allDates;
   const chartDatasets = series.map((s, i) => {
-    const color = ['#00d4aa','#ff6b6b','#ffd93d','#6c5ce7','#00b894','#e17055','#0984e3','#fdcb6e'][i % 8];
+    const color = colors[i % colors.length];
     const values = allDates.map(d => {
       const snap = [...s.data].reverse().find(x => x.date <= d);
       return snap ? (snap.avg || 0) * s.qty : 0;
     });
-    return { label: s.name + (s.qty > 1 ? ' ×' + s.qty : ''), data: values, borderColor: color, fill: false, tension: 0.3, pointRadius: 1 };
+    return { label: s.name + (s.qty > 1 ? ' ×' + s.qty : ''), data: values, color };
   });
 
-  // Combined totals
   const totals = allDates.map((_, di) => chartDatasets.reduce((s, ds) => s + (ds.data[di] || 0), 0));
 
-  // Prices map for table
   const prices = {};
   resolved.forEach(r => {
     const snaps = data.snapshots[r.id] || [];
-    const last = [...snaps].reverse().find(s => new Date(s.date) >= cutoff);
-    const first = snaps.find(s => new Date(s.date) >= cutoff);
-    const vals = snaps.filter(s => new Date(s.date) >= cutoff && s.avg != null).map(s => s.avg);
-    const avg = vals.length ? vals.reduce((a,b)=>a+b,0)/vals.length : null;
-    const min = vals.length ? Math.min(...vals) : null;
-    const max = vals.length ? Math.max(...vals) : null;
-    const lastP = last ? last.avg : null;
-    const firstP = first ? first.avg : null;
-    const chg = (lastP != null && firstP != null && firstP !== 0) ? ((lastP-firstP)/firstP*100) : null;
-    prices[r.name] = { latest: lastP, avg, min, max, first: firstP, chg, snaps: snaps.filter(s => new Date(s.date) >= cutoff), qty: r.qty };
+    const filtered = snaps.filter(s => new Date(s.date) >= cutoff);
+    const vals = filtered.filter(s => s.avg != null).map(s => s.avg);
+    const lastSnap = [...filtered].reverse().find(s => s.avg != null);
+    const firstSnap = filtered.find(s => s.avg != null);
+    prices[r.name] = {
+      latest: lastSnap ? lastSnap.avg : null,
+      avg: vals.length ? vals.reduce((a,b)=>a+b,0)/vals.length : null,
+      min: vals.length ? Math.min(...vals) : null,
+      max: vals.length ? Math.max(...vals) : null,
+      first: firstSnap ? firstSnap.avg : null,
+      qty: r.qty,
+      snaps: filtered,
+    };
   });
 
-  const totalVal = totals.length ? totals[totals.length-1] : 0;
-  const avgChg = resolved.filter(r => prices[r.name].chg != null).reduce((s, r) => s + prices[r.name].chg, 0);
-  const nChg = resolved.filter(r => prices[r.name].chg != null).length;
+  const totalVal = totals.length ? totals[totals.length - 1] : 0;
+  const avgChg = resolved.filter(r => {
+    const p = prices[r.name];
+    return p.latest != null && p.first != null && p.first !== 0;
+  }).reduce((s, r) => {
+    const p = prices[r.name];
+    return s + ((p.latest - p.first) / p.first * 100);
+  }, 0);
+  const nChg = resolved.filter(r => {
+    const p = prices[r.name]; return p.latest != null && p.first != null && p.first !== 0;
+  }).length;
   const avgChgVal = nChg ? avgChg / nChg : 0;
   const totalQty = resolved.reduce((s, r) => s + r.qty, 0);
 
-  // Generate chart image
-  const chartUrl = buildChartImage(chartLabels, chartDatasets, totals, pf.name + ' — ' + days + 'd');
-
-  // Helper
+  const chartUrl = buildReportChart(allDates, chartDatasets, totals, pf.name + ' — ' + days + 'd', colors);
   const f = (v) => v == null ? '—' : '€' + Number(v).toFixed(2);
   const pc = (v) => v == null ? '—' : (v >= 0 ? '+' : '') + v.toFixed(1) + '%';
   const cls = (v) => v != null && v >= 0 ? 'up' : 'down';
 
-  // Product detail rows
   const rows = resolved.map(r => {
     const p = prices[r.name];
+    const sub = p.latest != null ? p.latest * r.qty : null;
     const qtyTag = r.qty > 1 ? ' ×' + r.qty : '';
+    const chg = (p.latest != null && p.first != null && p.first !== 0) ? ((p.latest-p.first)/p.first*100) : null;
     return `<tr><td>${esc(r.name)}${qtyTag}</td>
       <td><strong>${f(p.latest)}</strong></td>
       <td>${f(p.min)}</td>
       <td>${f(p.avg)}</td>
-      <td>${f(p.latest != null ? p.latest * r.qty : null)}</td>
-      <td class="${cls(p.chg)}">${pc(p.chg)}</td></tr>`;
+      <td>${f(sub)}</td>
+      <td class="${cls(chg)}">${pc(chg)}</td></tr>`;
   }).join('');
 
-  // Per-product detail cards
   const detailCards = resolved.map(r => {
     const p = prices[r.name];
-    const hist = p.snaps.slice(-14);
-    const histRows = hist.map(s => `<tr><td>${s.date}</td><td>${f(s.avg)}</td></tr>`).join('');
-    const qtyTag = r.qty > 1 ? ' ×' + r.qty + ' — <span style="color:#00d4aa">' + f(p.latest != null ? p.latest * r.qty : null) + '</span>' : '';
+    const hist = p.snaps.filter(s => s.avg != null).slice(-14);
+    const histRows = hist.map(s => '<tr><td>' + s.date + '</td><td>' + f(s.avg) + '</td></tr>').join('');
+    const chg = (p.latest != null && p.first != null && p.first !== 0) ? ((p.latest-p.first)/p.first*100) : null;
+    const sub = p.latest != null ? p.latest * r.qty : null;
+    const qtyTag = r.qty > 1 ? ' ×' + r.qty + ' — <span style="color:#00d4aa">' + f(sub) + '</span>' : '';
     return `<div style="background:#1a1a2e;border-radius:10px;padding:0.8rem;margin:0.6rem 0;break-inside:avoid">
       <h3 style="color:#ffd93d;font-size:0.95rem;margin:0 0 0.4rem">📦 ${esc(r.name)}${qtyTag}</h3>
       <table style="font-size:0.82rem"><tr><td width="100">Latest</td><td><strong>${f(p.latest)}</strong></td>
         <td width="100">${days}d Avg</td><td>${f(p.avg)}</td></tr>
       <tr><td>${days}d Min</td><td>${f(p.min)}</td><td>${days}d Max</td><td>${f(p.max)}</td></tr>
-      <tr><td>Qty</td><td>${r.qty}</td><td>${days}d Change</td><td class="${cls(p.chg)}">${pc(p.chg)}</td></tr></table>
-      ${hist.length ? `<details><summary style="color:#888;font-size:0.8rem;cursor:pointer;margin-top:0.3rem">📜 Recent history</summary><table style="font-size:0.78rem"><tr><th>Date</th><th>Price</th></tr>${histRows}</table></details>` : ''}
+      <tr><td>Qty</td><td>${r.qty}</td><td>${days}d Change</td><td class="${cls(chg)}">${pc(chg)}</td></tr></table>
+      ${hist.length ? '<details><summary style="color:#888;font-size:0.8rem;cursor:pointer;margin-top:0.3rem">📜 Recent history (' + hist.length + ' entries)</summary><table style="font-size:0.78rem"><tr><th>Date</th><th>Price</th></tr>' + histRows + '</table></details>' : '<p class="muted" style="font-size:0.78rem;margin-top:0.3rem">No price history yet.</p>'}
     </div>`;
   }).join('');
 
-  const html = `<!DOCTYPE html><html lang="en"><head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>Portfolio — ${esc(pf.name)}</title>
-<style>*{margin:0;padding:0;box-sizing:border-box}
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#0f0f1a;color:#e0e0e0;padding:1.5rem}
-h1{font-size:1.5rem;margin-bottom:0.2rem;color:#00d4aa}
-h2{font-size:1.2rem;margin:1rem 0 0.5rem;color:#00d4aa}
-.sub{color:#888;margin-bottom:1rem;font-size:0.85rem}
-.sum{display:flex;gap:1rem;margin:1rem 0;flex-wrap:wrap}
-.c{background:#1a1a2e;border-radius:10px;padding:0.8rem 1.2rem;flex:1;min-width:130px}
-.c .l{font-size:0.75rem;color:#888;text-transform:uppercase}
-.c .v{font-size:1.3rem;font-weight:700;margin-top:0.2rem}
-.ch{max-width:750px;margin:1rem auto;text-align:center}
-.ch img{max-width:100%;height:auto;border-radius:8px}
-table{width:100%;border-collapse:collapse;margin:0.5rem 0;font-size:0.85rem}
-th{text-align:left;padding:0.45rem 0.6rem;background:#16213e;color:#888;border-bottom:2px solid #2d2d44;font-size:0.72rem;text-transform:uppercase}
-td{padding:0.45rem 0.6rem;border-bottom:1px solid #1e1e30}
-tr:hover td{background:#16213e}
-.up{color:#00d4aa}.down{color:#ff6b6b}
-.dc{column-count:2;column-gap:1rem}
-@media(max-width:700px){.dc{column-count:1}}
-.f{text-align:center;color:#555;font-size:0.75rem;margin-top:2rem}
-</style></head><body>
-<h1>📊 ${esc(pf.name)}</h1>
-<p class="sub">${pf.description ? esc(pf.description) + ' · ' : ''}${days}d lookback · ${resolved.length} products, ${totalQty} units · Generated ${new Date().toLocaleString()}</p>
+  const html = '<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Portfolio — ' + esc(pf.name) + '</title><style>' +
+    '*{margin:0;padding:0;box-sizing:border-box}body{font-family:-apple-system,BlinkMacSystemFont,\'Segoe UI\',Roboto,sans-serif;background:#0f0f1a;color:#e0e0e0;padding:1.5rem}' +
+    'h1{font-size:1.5rem;margin-bottom:0.2rem;color:#00d4aa}h2{font-size:1.2rem;margin:1rem 0 0.5rem;color:#00d4aa}' +
+    '.sub{color:#888;margin-bottom:1rem;font-size:0.85rem}' +
+    '.sum{display:flex;gap:1rem;margin:1rem 0;flex-wrap:wrap}' +
+    '.c{background:#1a1a2e;border-radius:10px;padding:0.8rem 1.2rem;flex:1;min-width:130px}' +
+    '.c .l{font-size:0.75rem;color:#888;text-transform:uppercase}' +
+    '.c .v{font-size:1.3rem;font-weight:700;margin-top:0.2rem}' +
+    '.ch{max-width:750px;margin:1rem auto;text-align:center}.ch img{max-width:100%;height:auto;border-radius:8px}' +
+    'table{width:100%;border-collapse:collapse;margin:0.5rem 0;font-size:0.85rem}' +
+    'th{text-align:left;padding:0.45rem 0.6rem;background:#16213e;color:#888;border-bottom:2px solid #2d2d44;font-size:0.72rem;text-transform:uppercase}' +
+    'td{padding:0.45rem 0.6rem;border-bottom:1px solid #1e1e30}tr:hover td{background:#16213e}' +
+    '.up{color:#00d4aa}.down{color:#ff6b6b}' +
+    '.dc{column-count:2;column-gap:1rem}@media(max-width:700px){.dc{column-count:1}}' +
+    '.f{text-align:center;color:#555;font-size:0.75rem;margin-top:2rem}</style></head><body>' +
+    '<h1>📊 ' + esc(pf.name) + '</h1>' +
+    '<p class="sub">' + (pf.description ? esc(pf.description) + ' · ' : '') + days + 'd lookback · ' + resolved.length + ' products, ' + totalQty + ' units · Generated ' + new Date().toLocaleString() + '</p>' +
+    '<div class="sum"><div class="c"><div class="l">Portfolio Value</div><div class="v">' + f(totalVal) + '</div></div>' +
+    '<div class="c"><div class="l">Avg ' + days + 'd Change</div><div class="v ' + cls(avgChgVal) + '">' + pc(avgChgVal) + '</div></div>' +
+    '<div class="c"><div class="l">Products / Units</div><div class="v">' + resolved.length + ' / ' + totalQty + '</div></div></div>' +
+    '<div class="ch">' + chartUrl + '</div>' +
+    '<h2>Breakdown</h2><table><thead><tr><th>Product</th><th>Latest</th><th>' + days + 'd Min</th><th>' + days + 'd Avg</th><th>Subtotal</th><th>' + days + 'd Δ</th></tr></thead><tbody>' + rows + '</tbody></table>' +
+    '<h2>Product Details</h2><div class="dc">' + detailCards + '</div>' +
+    '<div class="f">MTG Price Tracker · Generated with ❤️</div></body></html>';
 
-<div class="sum">
-  <div class="c"><div class="l">Portfolio Value</div><div class="v">${f(totalVal)}</div></div>
-  <div class="c"><div class="l">Avg ${days}d Change</div><div class="v ${cls(avgChgVal)}">${pc(avgChgVal)}</div></div>
-  <div class="c"><div class="l">Products / Units</div><div class="v">${resolved.length} / ${totalQty}</div></div>
-</div>
-
-<div class="ch">${chartUrl}</div>
-
-<h2>Breakdown</h2>
-<table><thead><tr><th>Product</th><th>Latest</th><th>${days}d Min</th><th>${days}d Avg</th><th>Subtotal</th><th>${days}d Δ</th></tr></thead>
-<tbody>${rows}</tbody></table>
-
-<h2>Product Details</h2>
-<div class="dc">${detailCards}</div>
-
-<div class="f">MTG Price Tracker · Generated with ❤️</div>
-</body></html>`;
-
-  downloadFile(html, `portfolio_${pf.name.replace(/\s+/g,'_').toLowerCase()}.html`, 'text/html');
-  toast('✅ Report generated!');
+  downloadFile(html, 'portfolio_' + pf.name.replace(/\s+/g,'_').toLowerCase() + '.html', 'text/html');
+  toast('✅ Report generated: ' + pf.name);
 }
 
-function buildChartImage(labels, datasets, totals, title) {
-  if (!labels.length) return '<p class="muted">No data for chart.</p>';
+function buildReportChart(labels, datasets, totals, title, colors) {
+  if (!labels.length) return '<p class="muted">No price data yet. Add some prices first!</p>';
   const canvas = document.createElement('canvas');
   canvas.width = 900;
-  canvas.height = 500;
+  canvas.height = 480;
   const ctx = canvas.getContext('2d');
 
-  // Dark background
   ctx.fillStyle = '#1a1a2e';
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-  // Title
   ctx.fillStyle = '#e0e0e0';
   ctx.font = '14px sans-serif';
   ctx.textAlign = 'center';
-  ctx.fillText(title || '', canvas.width/2, 25);
+  ctx.fillText(title, canvas.width / 2, 25);
 
-  // We'll use Canvas native drawing for simplicity
-  const margin = { top: 40, right: 20, bottom: 40, left: 65 };
+  const margin = { top: 35, right: 15, bottom: 45, left: 60 };
   const w = canvas.width - margin.left - margin.right;
   const h = canvas.height - margin.top - margin.bottom;
 
-  // Find max value
   const allVals = [...totals, ...datasets.flatMap(d => d.data)];
   const maxVal = Math.max(...allVals.filter(v => v > 0), 1) * 1.1;
-  const minVal = 0;
+  const stepX = Math.max(1, w / Math.max(labels.length - 1, 1));
 
-  // Grid lines
+  // Grid + Y labels
   ctx.strokeStyle = '#2d2d44';
   ctx.lineWidth = 0.5;
+  ctx.fillStyle = '#888';
+  ctx.font = '11px sans-serif';
   for (let i = 0; i <= 4; i++) {
     const y = margin.top + (h / 4) * i;
     ctx.beginPath(); ctx.moveTo(margin.left, y); ctx.lineTo(margin.left + w, y); ctx.stroke();
-  }
-
-  // Y-axis labels
-  ctx.fillStyle = '#888';
-  ctx.font = '11px sans-serif';
-  ctx.textAlign = 'right';
-  for (let i = 0; i <= 4; i++) {
     const val = maxVal - (maxVal / 4) * i;
-    const y = margin.top + (h / 4) * i;
-    ctx.fillText('€' + val.toFixed(0), margin.left - 8, y + 4);
+    ctx.textAlign = 'right';
+    ctx.fillText('€' + val.toFixed(0), margin.left - 6, y + 4);
   }
 
-  // Draw individual product lines
-  const colors = ['#00d4aa','#ff6b6b','#ffd93d','#6c5ce7','#00b894','#e17055','#0984e3','#fdcb6e'];
-  const stepX = w / Math.max(labels.length - 1, 1);
+  // Individual lines
   datasets.forEach((ds, i) => {
     ctx.strokeStyle = colors[i % colors.length];
-    ctx.lineWidth = 1.5;
+    ctx.lineWidth = 1.3;
     ctx.beginPath();
     ds.data.forEach((val, di) => {
       const x = margin.left + di * stepX;
-      const y = margin.top + h - ((val - minVal) / (maxVal - minVal)) * h;
+      const y = margin.top + h - (val / maxVal) * h;
       di === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
     });
     ctx.stroke();
   });
 
-  // Fill area for combined total
-  ctx.fillStyle = 'rgba(0,212,170,0.15)';
+  // Fill combined
+  ctx.fillStyle = 'rgba(0,212,170,0.12)';
   ctx.beginPath();
   totals.forEach((val, i) => {
     const x = margin.left + i * stepX;
-    const y = margin.top + h - ((val - minVal) / (maxVal - minVal)) * h;
-    i === 0 ? ctx.moveTo(x, margin.top + h) : '';
-    ctx.lineTo(x, y);
+    const y = margin.top + h - (val / maxVal) * h;
+    i === 0 ? ctx.moveTo(x, margin.top + h) : ''; ctx.lineTo(x, y);
   });
   ctx.lineTo(margin.left + (totals.length - 1) * stepX, margin.top + h);
-  ctx.closePath();
-  ctx.fill();
+  ctx.closePath(); ctx.fill();
 
-  // Combined total line (thick)
+  // Combined line
   ctx.strokeStyle = '#00d4aa';
   ctx.lineWidth = 2.5;
   ctx.beginPath();
   totals.forEach((val, i) => {
     const x = margin.left + i * stepX;
-    const y = margin.top + h - ((val - minVal) / (maxVal - minVal)) * h;
+    const y = margin.top + h - (val / maxVal) * h;
     i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
   });
   ctx.stroke();
 
-  // X-axis labels (show ~10)
+  // X labels
+  ctx.fillStyle = '#888';
+  ctx.font = '10px sans-serif';
   ctx.textAlign = 'center';
   const stepLabel = Math.max(1, Math.floor(labels.length / 10));
   labels.forEach((d, i) => {
     if (i % stepLabel !== 0 && i !== labels.length - 1) return;
-    ctx.fillText(d.slice(5), margin.left + i * stepX, margin.top + h + 18);
+    ctx.fillText(d.slice(5), margin.left + i * stepX, margin.top + h + 16);
   });
 
   // Legend
+  ctx.font = '10px sans-serif';
   ctx.textAlign = 'left';
-  let lx = margin.left + 10;
-  const ly = margin.top + h + 32;
-  ctx.font = '11px sans-serif';
+  let lx = margin.left + 5;
   datasets.forEach((ds, i) => {
-    const label = ds.label.length > 15 ? ds.label.slice(0,14) + '…' : ds.label;
-    const tw = ctx.measureText(label).width + 22;
+    const label = ds.label.length > 14 ? ds.label.slice(0, 13) + '…' : ds.label;
+    const tw = ctx.measureText(label).width + 20;
     if (lx + tw > margin.left + w) return;
     ctx.fillStyle = colors[i % colors.length];
-    ctx.fillRect(lx, ly, 10, 10);
+    ctx.fillRect(lx, margin.top + h + 28, 10, 10);
     ctx.fillStyle = '#aaa';
-    ctx.fillText(label, lx + 14, ly + 9);
-    lx += tw + 10;
+    ctx.fillText(label, lx + 14, margin.top + h + 37);
+    lx += tw + 8;
   });
 
   return '<img src="' + canvas.toDataURL() + '" alt="Chart" />';
@@ -792,25 +843,55 @@ function buildChartImage(labels, datasets, totals, title) {
 // CHARTS (interactive)
 // ═══════════════════════════════════════════════════════════
 
-function drawProductChart() {
-  const id = document.getElementById('chartSelect').value;
-  if (!id) return;
+function onChartSearch() {
+  const q = document.getElementById('chartInput').value.toLowerCase().trim();
+  const prods = getProducts().filter(p => !q || p.name.toLowerCase().includes(q));
+  const sug = document.getElementById('chartSuggestions');
+  if (!prods.length || !q) { sug.innerHTML = ''; drawProductChart(); return; }
+  sug.innerHTML = prods.slice(0, 8).map(p => `<div style="background:#16213e;padding:0.3rem 0.6rem;margin:2px 0;border-radius:4px;cursor:pointer;font-size:0.85rem" onclick="selectChartProd(${p.id})">${esc(p.name)}</div>`).join('');
+  if (prods.length === 1 && q) selectChartProd(prods[0].id);
+}
+
+function selectChartProd(id) {
+  const prod = getProducts().find(p => p.id === id);
+  if (!prod) return;
+  document.getElementById('chartInput').value = prod.name;
+  document.getElementById('chartSuggestions').innerHTML = '';
+  drawProductChart(id);
+}
+
+function drawProductChart(forcedId) {
+  const id = forcedId || null;
   const prods = getProducts();
-  const prod = prods.find(p => p.id == id);
-  if (!prod || !prod.history || !prod.history.length) return;
+  let prod;
+  if (id) prod = prods.find(p => p.id === id);
+  else {
+    const q = document.getElementById('chartInput').value.toLowerCase();
+    const matches = prods.filter(p => p.name.toLowerCase().includes(q));
+    if (matches.length === 1) prod = matches[0];
+    else prod = null;
+  }
 
-  const ctx = document.getElementById('prodChart').getContext('2d');
+  const emptyEl = document.getElementById('chartEmpty');
+  const canvas = document.getElementById('prodChart');
+  if (!prod || !prod.history || prod.history.length < 2) {
+    emptyEl.style.display = prod ? 'block' : 'block';
+    emptyEl.innerHTML = prod ? '<div class="big">📊</div><p>Not enough price data for ' + esc(prod.name) + '.<br>Go to Products tab and set some prices.</p>' : '<div class="big">📈</div><p>Search for a product above to see its price history.</p>';
+    canvas.style.display = 'none';
+    if (charts.product) { charts.product.destroy(); charts.product = null; }
+    return;
+  }
+  emptyEl.style.display = 'none';
+  canvas.style.display = 'block';
+
+  const ctx = canvas.getContext('2d');
   if (charts.product) charts.product.destroy();
-
-  const data = prod.history;
   charts.product = new Chart(ctx, {
     type: 'line',
     data: {
-      labels: data.map(d => d.date),
-      datasets: [
-        { label: 'Price', data: data.map(d => d.avg), borderColor: '#00d4aa', fill: true,
-          backgroundColor: 'rgba(0,212,170,0.1)', tension: 0.3, pointRadius: 1.5 },
-      ]
+      labels: prod.history.map(d => d.date),
+      datasets: [{ label: 'Price', data: prod.history.map(d => d.avg), borderColor: '#00d4aa',
+        fill: true, backgroundColor: 'rgba(0,212,170,0.1)', tension: 0.3, pointRadius: 1.5 }]
     },
     options: {
       responsive: true,
@@ -830,46 +911,45 @@ function drawProductChart() {
 
 function renderDashboard() {
   const prods = getProducts();
+  const hasData = hasAnyPrice();
 
   // Summary
   const totalVal = prods.reduce((s, p) => s + (p.latest || 0), 0);
   const avgChg = prods.filter(p => p.chg90 != null).reduce((s, p) => s + p.chg90, 0);
   const nChg = prods.filter(p => p.chg90 != null).length;
-  document.getElementById('dashSummary').innerHTML = prods.length
-    ? `<div class="gap"><span>Total: <strong>${fmt(totalVal)}</strong></span>
-       <span>Avg 90d: <span class="${avgChg >= 0 ? 'up' : 'down'}">${avgChg > 0 ? '+' : ''}${(nChg ? avgChg/nChg : 0).toFixed(1)}%</span></span>
-       <span>Products: <strong>${prods.length}</strong></span></div>`
-    : 'No products yet. Click "Seed Demo" or add products manually.';
+  const withPrices = prods.filter(p => p.latest != null).length;
+
+  document.getElementById('dashSummary').innerHTML = hasData
+    ? '<div class="gap"><span>Total value: <strong>' + fmt(totalVal) + '</strong></span> <span>With prices: <strong>' + withPrices + '/' + prods.length + '</strong></span> <span>Avg 90d: <span class="' + (avgChg >= 0 ? 'up' : 'down') + '">' + (avgChg > 0 ? '+' : '') + (nChg ? (avgChg / nChg).toFixed(1) : '0') + '%</span></span></div>'
+    : '<div class="empty-box"><div class="big">📊</div><p>No price data yet.</p><div class="gap" style="justify-content:center"><button class="btn btn-warning" onclick="seedDemo()">⚡ Seed Demo Data</button><button class="btn btn-primary" onclick="openAddProduct()">+ Add Products Manually</button></div></div>';
 
   // Table
-  document.getElementById('dashTbody').innerHTML = prods.map(p =>
-    `<tr><td><strong>${esc(p.name)}</strong></td>
-      <td>${fmt(p.latest)}</td><td>${fmt(p.avg90)}</td><td>${fmt(p.min90)}</td>
-      <td>${fmt(p.max90)}</td>
-      <td class="${p.chg90 != null && p.chg90 >= 0 ? 'up' : 'down'}">${p.chg90 != null ? (p.chg90 > 0 ? '+' : '') + p.chg90.toFixed(1) + '%' : '—'}</td>
+  const tb = document.getElementById('dashTable');
+  tb.innerHTML = !prods.length
+    ? '<div class="empty-box"><div class="big">📦</div><p>No products yet.</p><div class="gap" style="justify-content:center"><button class="btn btn-warning" onclick="seedDemo()">⚡ Seed Demo Data</button><button class="btn btn-primary" onclick="openAddProduct()">+ Add First Product</button></div></div>'
+    : '<div class="scroll"><table><thead><tr><th>Name</th><th>Latest</th><th>90d Avg</th><th>90d Min</th><th>90d Max</th><th>90d Δ</th><th></th></tr></thead><tbody>' +
+    prods.map(p => `<tr><td><strong>${esc(p.name)}</strong></td>
+      <td>${fmt(p.latest)}</td><td>${fmt(p.avg90)}</td><td>${fmt(p.min90)}</td><td>${fmt(p.max90)}</td>
+      <td class="${p.chg90 != null && p.chg90 >= 0 ? 'up' : 'down'}">${p.chg90 != null ? (p.chg90 > 0 ? '+' : '') + p.chg90.toFixed(1) + '%' : '<span class="muted">no data</span>'}</td>
       <td><button class="btn btn-danger btn-sm" onclick="deleteProduct(${p.id},'${esc(p.name)}')">✕</button></td></tr>`
-  ).join('');
+    ).join('') + '</tbody></table></div>';
 
   // Portfolio summary
-  const pfEl = document.getElementById('dashPortfolios');
-  if (data.portfolios.length) {
-    pfEl.innerHTML = data.portfolios.map(pf => {
+  document.getElementById('dashPortfolios').innerHTML = data.portfolios.length
+    ? data.portfolios.map(pf => {
       const totalQty = pf.products.reduce((s, p) => s + (p.qty || 1), 0);
-      return `<div style="padding:0.4rem 0;border-bottom:1px solid #1e1e30;font-size:0.85rem">
-        📂 <strong>${esc(pf.name)}</strong> <span class="badge">${totalQty} units</span></div>`;
-    }).join('');
-  } else {
-    pfEl.innerHTML = '<div class="muted">No portfolios yet.</div>';
-  }
+      return '<div style="padding:0.35rem 0;border-bottom:1px solid #1e1e30;font-size:0.85rem">📂 <strong>' + esc(pf.name) + '</strong> <span class="badge">' + totalQty + ' units</span></div>';
+    }).join('')
+    : '<div class="muted">No portfolios yet. Go to Portfolios tab to create one.</div>';
 
   // Bar chart
   const ctx = document.getElementById('dashChart').getContext('2d');
   if (charts.dash) charts.dash.destroy();
-  if (!prods.length) { charts.dash = null; return; }
+  if (!prods.length || !hasData) { charts.dash = null; return; }
   charts.dash = new Chart(ctx, {
     type: 'bar',
     data: {
-      labels: prods.map(p => p.name.length > 22 ? p.name.slice(0,19)+'…' : p.name),
+      labels: prods.map(p => p.name.length > 20 ? p.name.slice(0, 17) + '…' : p.name),
       datasets: [
         { label: 'Latest', data: prods.map(p => p.latest || 0), backgroundColor: '#00d4aa', borderRadius: 4 },
         { label: '90d Avg', data: prods.map(p => p.avg90 || 0), backgroundColor: '#2d2d44', borderRadius: 4 },
@@ -888,27 +968,20 @@ function renderDashboard() {
 
 function renderProducts() {
   const prods = getProducts();
-  document.getElementById('prodTbody').innerHTML = prods.map(p =>
-    `<tr><td><strong>${esc(p.name)}</strong></td>
+  const el = document.getElementById('prodContent');
+  if (!prods.length) {
+    el.innerHTML = '<div class="empty-box"><div class="big">📦</div><p>No products yet.</p><div class="gap" style="justify-content:center"><button class="btn btn-warning" onclick="seedDemo()">⚡ Seed Demo</button><button class="btn btn-primary" onclick="openAddProduct()">+ Add Product</button></div></div>';
+    return;
+  }
+  el.innerHTML = '<div class="scroll"><table><thead><tr><th>Name</th><th>Latest</th><th>Trend</th><th>90d Δ</th><th>Snaps</th><th></th></tr></thead><tbody>' +
+    prods.map(p => `<tr>
+      <td><strong>${esc(p.name)}</strong></td>
       <td>${fmt(p.latest)}</td>
-      <td class="${p.trend >= 0 ? 'up' : 'down'}">${p.trend > 0 ? '+' : ''}${p.trend.toFixed(1)}%</td>
-      <td class="${p.chg90 != null && p.chg90 >= 0 ? 'up' : 'down'}">${p.chg90 != null ? (p.chg90 > 0 ? '+' : '') + p.chg90.toFixed(1) + '%' : '—'}</td>
+      <td class="${p.trend != null && p.trend >= 0 ? 'up' : 'down'}">${p.trend != null ? (p.trend > 0 ? '+' : '') + p.trend.toFixed(1) + '%' : '<span class="muted">—</span>'}</td>
+      <td class="${p.chg90 != null && p.chg90 >= 0 ? 'up' : 'down'}">${p.chg90 != null ? (p.chg90 > 0 ? '+' : '') + p.chg90.toFixed(1) + '%' : '<span class="muted">—</span>'}</td>
       <td class="muted">${p.snaps}</td>
       <td><button class="btn btn-danger btn-sm" onclick="deleteProduct(${p.id},'${esc(p.name)}')">✕</button></td></tr>`
-  ).join('');
-
-  const sel = document.getElementById('chartSelect');
-  const cur = sel.value;
-  sel.innerHTML = '<option value="">Select a product…</option>' +
-    prods.map(p => `<option value="${p.id}" ${p.id == cur ? 'selected' : ''}>${esc(p.name)}</option>`).join('');
-}
-
-function renderPortfolios() {
-  renderPortfolios(); // already defined above
-}
-
-function populateReportSel() {
-  populateReportSel(); // already defined
+    ).join('') + '</tbody></table></div>';
 }
 
 function refreshAll() {
@@ -927,8 +1000,7 @@ function downloadFile(content, filename, mime) {
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
   a.download = filename;
-  document.body.appendChild(a);
-  a.click();
+  document.body.appendChild(a); a.click();
   document.body.removeChild(a);
   URL.revokeObjectURL(a.href);
 }
@@ -945,7 +1017,6 @@ function importJSON(event) {
   reader.onload = (e) => {
     try {
       const imported = JSON.parse(e.target.result);
-      // Validate
       if (imported.products && imported.snapshots && imported.portfolios) {
         if (confirm('Replace all current data with the backup?')) {
           data = imported;
@@ -953,9 +1024,7 @@ function importJSON(event) {
           toast('✅ Backup restored');
           refreshAll();
         }
-      } else {
-        toast('❌ Invalid backup file', true);
-      }
+      } else { toast('❌ Invalid backup file', true); }
     } catch(err) { toast('❌ Could not read file', true); }
   };
   reader.readAsText(file);

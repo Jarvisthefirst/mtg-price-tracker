@@ -38,10 +38,11 @@ import sys
 from pathlib import Path
 
 from database import PriceDB
-from api import CardmarketAPI
 from reporter import summary_table, product_detail, export_csv, generate_chart
 from portfolio import (list_portfolios, get_portfolio, build_portfolio_html,
                         PORTFOLIO_PATH, save_portfolios, load_portfolios)
+
+# CardmarketAPI imported lazily in get_api() — avoids crash when requests is missing
 
 # ---------------------------------------------------------------------------
 # Paths
@@ -91,7 +92,8 @@ def save_products(products: list[dict]):
 # API & DB
 # ---------------------------------------------------------------------------
 
-def get_api(cfg: dict) -> CardmarketAPI | None:
+def get_api(cfg: dict):
+    from api import CardmarketAPI
     creds = cfg.get("cardmarket_api", {})
     if not creds.get("app_token"):
         return None

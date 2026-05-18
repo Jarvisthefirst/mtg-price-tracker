@@ -45,7 +45,10 @@ def get_db():
 
 @app.route("/")
 def index():
-    return send_from_directory(str(BASE), "index.html")
+    path = BASE / "index.html"
+    if not path.exists():
+        return "<h1>index.html not found</h1><p>Check that index.html exists alongside web_app.py</p>", 404
+    return path.read_text(encoding="utf-8")
 
 
 # ---------------------------------------------------------------------------

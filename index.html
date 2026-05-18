@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MTG Price Tracker</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+       background:#0f0f1a; color:#e0e0e0; min-height:100vh; }
+
+/* Top bar */
+.topbar { background:#1a1a2e; padding:0.8rem 1.5rem; display:flex; align-items:center;
+          gap:2rem; border-bottom:1px solid #2d2d44; position:sticky; top:0; z-index:100; }
+.topbar h1 { font-size:1.2rem; color:#00d4aa; white-space:nowrap; }
+.topbar nav { display:flex; gap:0.5rem; flex-wrap:wrap; }
+.topbar nav button { background:transparent; border:1px solid #2d2d44; color:#888; padding:0.4rem 1rem;
+                     border-radius:8px; cursor:pointer; font-size:0.85rem; }
+.topbar nav button:hover { border-color:#00d4aa; color:#00d4aa; }
+.topbar nav button.active { background:#00d4aa; color:#0f0f1a; border-color:#00d4aa; font-weight:600; }
+
+/* Content */
+.container { max-width:1100px; margin:0 auto; padding:1.5rem; }
+.hidden { display:none !important; }
+
+/* Cards */
+.card { background:#1a1a2e; border-radius:12px; padding:1.2rem; margin-bottom:1rem; }
+.card h3 { color:#ffd93d; margin-bottom:0.5rem; }
+
+/* Grid */
+.row { display:flex; gap:1rem; flex-wrap:wrap; }
+.col { flex:1; min-width:280px; }
+
+/* Tables */
+table { width:100%; border-collapse:collapse; margin:0.5rem 0; }
+th { text-align:left; padding:0.5rem 0.6rem; background:#16213e;
+     font-size:0.75rem; text-transform:uppercase; letter-spacing:0.5px; color:#888; border-bottom:2px solid #2d2d44; }
+td { padding:0.5rem 0.6rem; border-bottom:1px solid #1e1e30; font-size:0.9rem; }
+tr:hover td { background:#16213e; }
+tr.selected td { background:#1a2a3e; }
+
+/* Buttons */
+.btn { display:inline-block; padding:0.4rem 1rem; border-radius:8px; border:none;
+       cursor:pointer; font-size:0.85rem; font-weight:500; transition:.15s; }
+.btn-sm { padding:0.3rem 0.7rem; font-size:0.8rem; }
+.btn-primary { background:#00d4aa; color:#0f0f1a; }
+.btn-primary:hover { background:#00e6b5; }
+.btn-danger { background:#ff6b6b; color:white; }
+.btn-danger:hover { background:#ff5252; }
+.btn-outline { background:transparent; border:1px solid #2d2d44; color:#888; }
+.btn-outline:hover { border-color:#00d4aa; color:#00d4aa; }
+.btn-success { background:#00b894; color:white; }
+.btn-group { display:flex; gap:0.4rem; flex-wrap:wrap; align-items:center; }
+
+/* Inputs */
+input, select { background:#16213e; border:1px solid #2d2d44; color:#e0e0e0;
+               padding:0.4rem 0.7rem; border-radius:6px; font-size:0.9rem; width:100%; }
+input:focus { border-color:#00d4aa; outline:none; }
+label { display:block; font-size:0.8rem; color:#888; margin-bottom:0.3rem; }
+.flex { display:flex; gap:0.5rem; align-items:center; flex-wrap:wrap; }
+.mt { margin-top:1rem; }
+.mb { margin-bottom:1rem; }
+.text-right { text-align:right; }
+.up { color:#00d4aa; }
+.down { color:#ff6b6b; }
+.muted { color:#888; font-size:0.85rem; }
+
+/* Modal */
+.modal-backdrop { position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:200;
+                  display:flex; align-items:center; justify-content:center; }
+.modal { background:#1a1a2e; border-radius:12px; padding:1.5rem; min-width:380px;
+         max-width:500px; width:90%; max-height:80vh; overflow-y:auto; }
+.modal h2 { color:#00d4aa; margin-bottom:1rem; }
+.modal .btn-group { margin-top:1rem; justify-content:flex-end; }
+
+/* Badge */
+.badge { display:inline-block; background:#2d2d44; border-radius:4px; padding:0.1rem 0.4rem;
+         font-size:0.7rem; color:#888; margin-left:0.3rem; }
+
+/* Alert */
+.alert { background:#2d2d44; border-left:3px solid #ffd93d; padding:0.6rem 1rem;
+         border-radius:6px; margin-bottom:0.8rem; font-size:0.85rem; }
+.alert-success { border-color:#00d4aa; }
+.alert-error { border-color:#ff6b6b; }
+
+/* Chart container */
+.chart-wrap { width:100%; max-width:700px; margin:1rem auto; }
+
+/* Scrollable table */
+.scroll { overflow-x:auto; }
+
+/* Quantity badge in portfolio */
+.qty-badge { display:inline-flex; align-items:center; justify-content:center;
+             background:#00d4aa20; color:#00d4aa; border-radius:20px;
+             min-width:28px; height:28px; font-size:0.8rem; font-weight:700; }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <h1>📊 MTG Tracker</h1>
+  <nav>
+    <button class="active" data-tab="dashboard">Dashboard</button>
+    <button data-tab="products">Products</button>
+    <button data-tab="portfolios">Portfolios</button>
+    <button data-tab="report">Report</button>
+  </nav>
+</div>
+
+<div class="container">
+
+<!-- ═══ Dashboard ═══ -->
+<div id="tab-dashboard" class="tab-content">
+  <div class="row mb">
+    <div class="col">
+      <div class="card">
+        <h3>📈 Market Overview</h3>
+        <div class="chart-wrap"><canvas id="dashChart"></canvas></div>
+      </div>
+    </div>
+    <div class="col">
+      <div class="card">
+        <h3>🏷️ Latest Prices</h3>
+        <div id="dashPrices"></div>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="flex">
+      <h3>📦 All Products</h3>
+      <button class="btn btn-primary btn-sm" onclick="showAddProduct()">+ Add</button>
+      <button class="btn btn-outline btn-sm" onclick="seedDemo()">Seed Demo</button>
+    </div>
+    <div class="scroll"><table id="dashTable"><thead><tr>
+      <th>Product</th><th>Latest</th><th>90d Avg</th><th>90d Min</th><th>90d Max</th><th></th>
+    </tr></thead><tbody id="dashTableBody"></tbody></table></div>
+  </div>
+</div>
+
+<!-- ═══ Products ═══ -->
+<div id="tab-products" class="tab-content hidden">
+  <div class="card">
+    <div class="flex">
+      <h3>📦 Product Manager</h3>
+      <button class="btn btn-primary btn-sm" onclick="showAddProduct()">+ Add Product</button>
+      <button class="btn btn-outline btn-sm" onclick="showPriceEntry()">💰 Set Price</button>
+    </div>
+    <div class="scroll"><table><thead><tr>
+      <th>ID</th><th>Name</th><th>Latest</th><th>Trend</th><th>History</th><th></th>
+    </tr></thead><tbody id="prodTableBody"></tbody></table></div>
+  </div>
+  <div class="card">
+    <div class="flex">
+      <h3>📈 Product Chart</h3>
+      <select id="prodChartSelect" onchange="loadProductChart()">
+        <option value="">Select a product…</option>
+      </select>
+    </div>
+    <div class="chart-wrap"><canvas id="prodChart"></canvas></div>
+  </div>
+</div>
+
+<!-- ═══ Portfolios ═══ -->
+<div id="tab-portfolios" class="tab-content hidden">
+  <div class="card">
+    <div class="flex">
+      <h3>📂 My Portfolios</h3>
+      <button class="btn btn-primary btn-sm" onclick="showCreatePortfolio()">+ Create</button>
+    </div>
+    <div id="portfolioList"></div>
+  </div>
+</div>
+
+<!-- ═══ Report ═══ -->
+<div id="tab-report" class="tab-content hidden">
+  <div class="row">
+    <div class="col">
+      <div class="card">
+        <h3>📄 Generate Report</h3>
+        <div class="mt">
+          <label>Portfolio</label>
+          <select id="reportSelect"><option value="">Choose…</option></select>
+        </div>
+        <div class="mt">
+          <label>Lookback (days)</label>
+          <input type="number" id="reportDays" value="90" min="7" max="365">
+        </div>
+        <button class="btn btn-primary mt" onclick="downloadReport()">⬇ Download HTML Report</button>
+      </div>
+    </div>
+    <div class="col">
+      <div class="card">
+        <h3>📤 Export Data</h3>
+        <p class="muted mb">Download all price history as CSV for spreadsheets.</p>
+        <a class="btn btn-outline" href="/api/export" download>⬇ Download CSV</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div><!-- /container -->
+
+<!-- ═══ Modals ═══ -->
+
+<!-- Add Product -->
+<div id="modal-add-product" class="modal-backdrop hidden" onclick="closeModal(event,'modal-add-product')">
+  <div class="modal" onclick="event.stopPropagation()">
+    <h2>➕ Add Product</h2>
+    <div class="mt"><label>Product Name</label><input id="apName" placeholder="e.g. Modern Horizons 3 Play Booster Box"></div>
+    <div class="mt"><label>Cardmarket ID (optional)</label><input id="apId" placeholder="e.g. 650321" type="number"></div>
+    <div class="mt"><label>Cardmarket URL (optional)</label><input id="apUrl" placeholder="https://www.cardmarket.com/..."></div>
+    <div class="btn-group"><button class="btn btn-outline" onclick="closeModalById('modal-add-product')">Cancel</button>
+      <button class="btn btn-primary" onclick="addProduct()">Add</button></div>
+  </div>
+</div>
+
+<!-- Set Price -->
+<div id="modal-price" class="modal-backdrop hidden" onclick="closeModal(event,'modal-price')">
+  <div class="modal" onclick="event.stopPropagation()">
+    <h2>💰 Set Price</h2>
+    <div class="mt"><label>Product</label>
+      <select id="mpProduct"></select>
+    </div>
+    <div class="mt"><label>Price (€)</label><input id="mpPrice" type="number" step="0.01" min="0"></div>
+    <div class="btn-group"><button class="btn btn-outline" onclick="closeModalById('modal-price')">Cancel</button>
+      <button class="btn btn-primary" onclick="setPrice()">Save</button></div>
+  </div>
+</div>
+
+<!-- Create Portfolio -->
+<div id="modal-create-pf" class="modal-backdrop hidden" onclick="closeModal(event,'modal-create-pf')">
+  <div class="modal" onclick="event.stopPropagation()">
+    <h2>📂 Create Portfolio</h2>
+    <div class="mt"><label>Portfolio Name</label><input id="cpName" placeholder="e.g. My Collection"></div>
+    <div class="mt"><label>Description (optional)</label><input id="cpDesc" placeholder="Describe your portfolio"></div>
+    <div class="btn-group"><button class="btn btn-outline" onclick="closeModalById('modal-create-pf')">Cancel</button>
+      <button class="btn btn-primary" onclick="createPortfolio()">Create</button></div>
+  </div>
+</div>
+
+<!-- Edit Portfolio -->
+<div id="modal-edit-pf" class="modal-backdrop hidden" onclick="closeModal(event,'modal-edit-pf')">
+  <div class="modal" style="min-width:500px" onclick="event.stopPropagation()">
+    <h2 id="editPfTitle">✏️ Edit Portfolio</h2>
+    <div class="mt">
+      <label>Description</label>
+      <input id="editPfDesc" placeholder="Description">
+    </div>
+    <div class="mt">
+      <label>Products</label>
+      <div id="editPfProducts"></div>
+    </div>
+    <div class="flex mt">
+      <select id="editPfAddSelect" style="flex:1"><option value="">Select product to add…</option></select>
+      <input id="editPfAddQty" type="number" value="1" min="1" style="width:70px" placeholder="Qty">
+      <button class="btn btn-primary btn-sm" onclick="addProductToEditPf()">+ Add</button>
+    </div>
+    <div class="btn-group"><button class="btn btn-outline" onclick="closeModalById('modal-edit-pf')">Close</button>
+      <button class="btn btn-danger btn-sm" id="editPfDelBtn" onclick="deleteCurrentPortfolio()">🗑️ Delete Portfolio</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════
+// App State
+// ══════════════════════════════════════════════════════
+
+let products = [];
+let portfolios = [];
+let portfolioChart = null;
+let productChart = null;
+let dashChart = null;
+let editingPfName = null;
+
+// ══════════════════════════════════════════════════════
+// Init
+// ══════════════════════════════════════════════════════
+
+document.addEventListener('DOMContentLoaded', () => {
+  // Tab navigation
+  document.querySelectorAll('[data-tab]').forEach(btn => {
+    btn.addEventListener('click', () => switchTab(btn.dataset.tab));
+  });
+  loadAll();
+});
+
+async function loadAll() {
+  await Promise.all([loadProducts(), loadPortfolios()]);
+  renderDashboard();
+  renderProducts();
+  renderPortfolios();
+  populateProductSelects();
+  populateReportSelect();
+}
+
+async function loadProducts() {
+  const r = await fetch('/api/products');
+  products = await r.json();
+}
+
+async function loadPortfolios() {
+  const r = await fetch('/api/portfolios');
+  portfolios = await r.json();
+}
+
+// ══════════════════════════════════════════════════════
+// Tabs
+// ══════════════════════════════════════════════════════
+
+function switchTab(tab) {
+  document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+  document.getElementById('tab-' + tab).classList.remove('hidden');
+  document.querySelectorAll('[data-tab]').forEach(b => b.classList.remove('active'));
+  document.querySelector(`[data-tab="${tab}"]`).classList.add('active');
+  if (tab === 'dashboard') renderDashboard();
+  if (tab === 'products') { renderProducts(); loadProductChart(); }
+  if (tab === 'portfolios') renderPortfolios();
+}
+
+// ══════════════════════════════════════════════════════
+// Dashboard
+// ══════════════════════════════════════════════════════
+
+function renderDashboard() {
+  // Table
+  const tbody = document.getElementById('dashTableBody');
+  tbody.innerHTML = products.map(p => {
+    const trend = p.trend || 0;
+    return `<tr>
+      <td><strong>${esc(p.name)}</strong></td>
+      <td>${fmt(p.latest)}</td>
+      <td>${fmt(p.avg_90d)}</td>
+      <td>${fmt(p.min_90d)}</td>
+      <td>${fmt(p.max_90d)}</td>
+      <td><span class="${trend >= 0 ? 'up' : 'down'}">${trend > 0 ? '+' : ''}${trend.toFixed(1)}%</span></td>
+    </tr>`;
+  }).join('');
+
+  // Summary cards
+  const total = products.reduce((s, p) => s + (p.latest || 0), 0);
+  const avgChange = products.filter(p => p.latest && p.min_90d)
+    .reduce((s, p) => s + (((p.latest - p.min_90d) / p.min_90d) * 100), 0);
+  const n = products.filter(p => p.latest).length;
+  document.getElementById('dashPrices').innerHTML = `
+    <div class="flex"><span class="muted">Portfolio Value (all):</span>
+      <strong>${fmt(total)}</strong></div>
+    <div class="flex"><span class="muted">Avg 90d Change:</span>
+      <span class="${avgChange >= 0 ? 'up' : 'down'}">${avgChange > 0 ? '+' : ''}${avgChange.toFixed(1)}%</span></div>
+    <div class="flex"><span class="muted">Products tracked:</span>
+      <strong>${products.length}</strong></div>
+  `;
+
+  // Chart
+  const ctx = document.getElementById('dashChart').getContext('2d');
+  if (dashChart) dashChart.destroy();
+  if (products.length === 0) { dashChart = null; return; }
+
+  const labels = products.map(p => p.name.length > 28 ? p.name.slice(0, 25) + '…' : p.name);
+  const latest = products.map(p => p.latest || 0);
+  const min90 = products.map(p => p.min_90d || 0);
+
+  dashChart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [
+        { label: 'Latest', data: latest, backgroundColor: '#00d4aa', borderRadius: 4 },
+        { label: '90d Min', data: min90, backgroundColor: '#2d2d44', borderRadius: 4 },
+      ]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { labels: { color: '#888' } } },
+      scales: {
+        x: { ticks: { color: '#888', maxRotation: 30 } },
+        y: { ticks: { color: '#888' }, grid: { color: '#1e1e30' } }
+      }
+    }
+  });
+}
+
+// ══════════════════════════════════════════════════════
+// Products Tab
+// ══════════════════════════════════════════════════════
+
+function renderProducts() {
+  const tbody = document.getElementById('prodTableBody');
+  tbody.innerHTML = products.map(p => {
+    const trend = p.trend || 0;
+    return `<tr>
+      <td class="muted">${p.id}</td>
+      <td><strong>${esc(p.name)}</strong></td>
+      <td>${fmt(p.latest)}</td>
+      <td><span class="${trend >= 0 ? 'up' : 'down'}">${trend > 0 ? '+' : ''}${trend.toFixed(1)}%</span></td>
+      <td><span class="muted">${fmt(p.min_90d)} – ${fmt(p.max_90d)}</span></td>
+      <td><button class="btn btn-danger btn-sm" onclick="deleteProduct(${p.id}, '${esc(p.name)}')">✕</button></td>
+    </tr>`;
+  }).join('');
+
+  // Populate chart select
+  const sel = document.getElementById('prodChartSelect');
+  const cur = sel.value;
+  sel.innerHTML = '<option value="">Select a product…</option>' +
+    products.map(p => `<option value="${p.id}" ${p.id == cur ? 'selected' : ''}>${esc(p.name)}</option>`).join('');
+}
+
+function populateProductSelects() {
+  const opts = products.map(p => `<option value="${p.id}">${esc(p.name)}</option>`).join('');
+  document.getElementById('mpProduct').innerHTML = '<option value="">Choose…</option>' + opts;
+  document.getElementById('editPfAddSelect').innerHTML = '<option value="">Select product to add…</option>' + opts;
+}
+
+function populateReportSelect() {
+  document.getElementById('reportSelect').innerHTML = '<option value="">Choose a portfolio…</option>' +
+    portfolios.map(p => `<option value="${esc(p.name)}">${esc(p.name)}</option>`).join('');
+}
+
+async function deleteProduct(id, name) {
+  if (!confirm(`Delete "${name}"?\nThis will remove all price data.`)) return;
+  await fetch(`/api/products/${id}`, { method: 'DELETE' });
+  await loadAll();
+}
+
+async function seedDemo() {
+  await fetch('/api/seed');
+  await loadAll();
+}
+
+// ══════════════════════════════════════════════════════
+// Product Chart
+// ══════════════════════════════════════════════════════
+
+async function loadProductChart() {
+  const id = document.getElementById('prodChartSelect').value;
+  if (!id) return;
+  const r = await fetch(`/api/products/${id}`);
+  const p = await r.json();
+  if (!p.history) return;
+
+  const ctx = document.getElementById('prodChart').getContext('2d');
+  if (productChart) productChart.destroy();
+
+  const dates = p.history.map(h => h.date);
+  productChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: dates,
+      datasets: [
+        { label: 'Avg Price', data: p.history.map(h => h.avg), borderColor: '#00d4aa',
+          fill: true, backgroundColor: 'rgba(0,212,170,0.1)', tension: 0.3, pointRadius: 2 },
+        { label: 'Low Price', data: p.history.map(h => h.low), borderColor: '#ff6b6b',
+          tension: 0.3, pointRadius: 1, borderDash: [4,4] },
+      ]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        title: { display: true, text: p.name, color: '#e0e0e0', font: { size: 14 } },
+        legend: { labels: { color: '#888' } }
+      },
+      scales: {
+        x: { ticks: { color: '#888', maxTicksLimit: 12, maxRotation: 30 } },
+        y: { ticks: { color: '#888' }, grid: { color: '#1e1e30' } }
+      }
+    }
+  });
+}
+
+// ══════════════════════════════════════════════════════
+// Portfolios Tab
+// ══════════════════════════════════════════════════════
+
+function renderPortfolios() {
+  const el = document.getElementById('portfolioList');
+  if (portfolios.length === 0) {
+    el.innerHTML = '<p class="muted">No portfolios yet. Create one above.</p>';
+    return;
+  }
+  el.innerHTML = portfolios.map(pf => {
+    const prods = pf.products || [];
+    const totalQty = prods.reduce((s, p) => s + (p.qty || 1), 0);
+    return `<div class="card" style="cursor:pointer" onclick="editPortfolio('${esc(pf.name)}')">
+      <div class="flex" style="justify-content:space-between">
+        <div>
+          <h3 style="margin:0">📂 ${esc(pf.name)}</h3>
+          ${pf.description ? `<span class="muted">${esc(pf.description)}</span>` : ''}
+        </div>
+        <div class="text-right">
+          <span class="badge">${totalQty} units</span>
+          <span class="badge">${prods.length} products</span>
+        </div>
+      </div>
+      <div class="mt flex" style="gap:0.5rem;flex-wrap:wrap">
+        ${prods.map(p => `<span class="qty-badge">${p.qty || 1}</span>
+          <span style="font-size:0.85rem">${esc(p.name)}</span>`).join('')}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function editPortfolio(name) {
+  editingPfName = name;
+  const pf = portfolios.find(p => p.name === name);
+  if (!pf) return;
+  document.getElementById('editPfTitle').textContent = '✏️ ' + name;
+  document.getElementById('editPfDesc').value = pf.description || '';
+  renderEditPfProducts(pf);
+  document.getElementById('modal-edit-pf').classList.remove('hidden');
+}
+
+function renderEditPfProducts(pf) {
+  const el = document.getElementById('editPfProducts');
+  const prods = pf.products || [];
+  if (prods.length === 0) {
+    el.innerHTML = '<p class="muted">No products in this portfolio.</p>';
+    return;
+  }
+  el.innerHTML = `<table><thead><tr><th>Product</th><th>Qty</th><th></th></tr></thead><tbody>
+    ${prods.map((p, i) => `<tr>
+      <td>${esc(p.name)}</td>
+      <td><input type="number" value="${p.qty || 1}" min="0" step="1"
+           onchange="updatePfQty(${i}, this.value)" style="width:60px"></td>
+      <td><button class="btn btn-danger btn-sm" onclick="removePfProduct(${i})">✕</button></td>
+    </tr>`).join('')}
+  </tbody></table>`;
+}
+
+async function updatePfQty(idx, val) {
+  const pf = portfolios.find(p => p.name === editingPfName);
+  if (!pf) return;
+  const qty = parseInt(val) || 1;
+  if (qty <= 0) {
+    pf.products.splice(idx, 1);
+  } else {
+    pf.products[idx].qty = qty;
+  }
+  await savePortfolioChanges(pf);
+  renderEditPfProducts(pf);
+}
+
+async function removePfProduct(idx) {
+  const pf = portfolios.find(p => p.name === editingPfName);
+  if (!pf) return;
+  pf.products.splice(idx, 1);
+  await savePortfolioChanges(pf);
+  renderEditPfProducts(pf);
+}
+
+async function addProductToEditPf() {
+  const sel = document.getElementById('editPfAddSelect');
+  const qty = parseInt(document.getElementById('editPfAddQty').value) || 1;
+  const pid = sel.value;
+  if (!pid) return;
+  const prod = products.find(p => p.id == pid);
+  if (!prod) return;
+  const pf = portfolios.find(p => p.name === editingPfName);
+  if (!pf) return;
+  pf.products = pf.products || [];
+  const exist = pf.products.find(p => p.name === prod.name);
+  if (exist) {
+    exist.qty += qty;
+  } else {
+    pf.products.push({ name: prod.name, qty });
+  }
+  await savePortfolioChanges(pf);
+  renderEditPfProducts(pf);
+  sel.value = '';
+}
+
+async function savePortfolioChanges(pf) {
+  await fetch(`/api/portfolios/${encodeURIComponent(pf.name)}`, {
+    method: 'PUT',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({ products: pf.products, description: pf.description }),
+  });
+  await loadPortfolios();
+  renderPortfolios();
+  populateReportSelect();
+}
+
+async function deleteCurrentPortfolio() {
+  if (!confirm(`Delete portfolio "${editingPfName}"?`)) return;
+  await fetch(`/api/portfolios/${encodeURIComponent(editingPfName)}`, { method: 'DELETE' });
+  closeModalById('modal-edit-pf');
+  await loadAll();
+}
+
+// ══════════════════════════════════════════════════════
+// Report Tab
+// ══════════════════════════════════════════════════════
+
+function downloadReport() {
+  const sel = document.getElementById('reportSelect');
+  const days = document.getElementById('reportDays').value;
+  const name = sel.value;
+  if (!name) { alert('Select a portfolio first'); return; }
+  const url = `/api/portfolios/${encodeURIComponent(name)}/report?days=${days}`;
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `portfolio_${name.toLowerCase().replace(/\s+/g, '_')}.html`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+}
+
+// ══════════════════════════════════════════════════════
+// Modal actions
+// ══════════════════════════════════════════════════════
+
+function showAddProduct() {
+  document.getElementById('apName').value = '';
+  document.getElementById('apId').value = '';
+  document.getElementById('apUrl').value = '';
+  document.getElementById('modal-add-product').classList.remove('hidden');
+}
+
+async function addProduct() {
+  const name = document.getElementById('apName').value.trim();
+  const id = document.getElementById('apId').value;
+  const url = document.getElementById('apUrl').value.trim();
+  if (!name && !id) { alert('Enter a name or ID'); return; }
+  const r = await fetch('/api/products', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({ name, id: id ? parseInt(id) : null, url }),
+  });
+  const res = await r.json();
+  if (res.error) { alert(res.error); return; }
+  closeModalById('modal-add-product');
+  await loadAll();
+}
+
+function showPriceEntry() {
+  populateProductSelects();
+  document.getElementById('mpPrice').value = '';
+  document.getElementById('modal-price').classList.remove('hidden');
+}
+
+async function setPrice() {
+  const sel = document.getElementById('mpProduct');
+  const price = document.getElementById('mpPrice').value;
+  if (!sel.value || !price) { alert('Select a product and enter a price'); return; }
+  const prod = products.find(p => p.id == sel.value);
+  if (!prod) return;
+  const r = await fetch('/api/products/price', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({ name: prod.name, avg: parseFloat(price) }),
+  });
+  const res = await r.json();
+  if (res.error) { alert(res.error); return; }
+  closeModalById('modal-price');
+  await loadAll();
+}
+
+function showCreatePortfolio() {
+  document.getElementById('cpName').value = '';
+  document.getElementById('cpDesc').value = '';
+  document.getElementById('modal-create-pf').classList.remove('hidden');
+}
+
+async function createPortfolio() {
+  const name = document.getElementById('cpName').value.trim();
+  if (!name) { alert('Enter a name'); return; }
+  const r = await fetch('/api/portfolios', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({ name, description: document.getElementById('cpDesc').value.trim() }),
+  });
+  const res = await r.json();
+  if (res.error) { alert(res.error); return; }
+  closeModalById('modal-create-pf');
+  await loadAll();
+}
+
+// ══════════════════════════════════════════════════════
+// Helpers
+// ══════════════════════════════════════════════════════
+
+function closeModal(event, id) {
+  if (event.target.classList.contains('modal-backdrop')) {
+    document.getElementById(id).classList.add('hidden');
+  }
+}
+function closeModalById(id) {
+  document.getElementById(id).classList.add('hidden');
+}
+function fmt(v) {
+  if (v == null) return '—';
+  return '€' + Number(v).toFixed(2);
+}
+function esc(s) {
+  if (!s) return '';
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+          .replace(/"/g,'&quot;').replace(/'/g,'&#039;');
+}
+</script>
+</body>
+</html>

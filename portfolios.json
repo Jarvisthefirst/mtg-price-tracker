@@ -1,0 +1,47 @@
+{
+    "description": "Named portfolios \u2014 groups of products to track together",
+    "portfolios": [
+        {
+            "name": "Premium",
+            "description": "High-end premium reprint sets",
+            "products": [
+                {
+                    "name": "Commander Masters Draft Booster Box",
+                    "qty": 1
+                },
+                {
+                    "name": "Double Masters 2022 Draft Booster Box",
+                    "qty": 1
+                }
+            ]
+        },
+        {
+            "name": "Modern Horizons",
+            "description": "MH3 + MH2 evolution",
+            "products": [
+                {
+                    "name": "Modern Horizons 3 Play Booster Box",
+                    "qty": 1
+                },
+                {
+                    "name": "Modern Horizons 2 Draft Booster Box",
+                    "qty": 1
+                }
+            ]
+        },
+        {
+            "name": "Standard Rotating",
+            "description": "Recently released standard-legal sets",
+            "products": [
+                {
+                    "name": "Bloomburrow Play Booster Box",
+                    "qty": 1
+                },
+                {
+                    "name": "Tarkir: Dragonstorm Play Booster Box",
+                    "qty": 1
+                }
+            ]
+        }
+    ]
+}

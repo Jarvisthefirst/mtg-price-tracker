@@ -1,0 +1,45 @@
+{
+    "description": "Products to track (editable)",
+    "products": [
+        {
+            "name": "Modern Horizons 3 Play Booster Box",
+            "cardmarket_id": null,
+            "url": "https://www.cardmarket.com/en/Magic/Products/Sealed/Modern-Horizons-3-Play-Booster-Box"
+        },
+        {
+            "name": "Modern Horizons 2 Draft Booster Box",
+            "cardmarket_id": null,
+            "url": "https://www.cardmarket.com/en/Magic/Products/Sealed/Modern-Horizons-2-Draft-Booster-Box"
+        },
+        {
+            "name": "Commander Masters Draft Booster Box",
+            "cardmarket_id": null,
+            "url": "https://www.cardmarket.com/en/Magic/Products/Sealed/Commander-Masters-Draft-Booster-Box"
+        },
+        {
+            "name": "Double Masters 2022 Draft Booster Box",
+            "cardmarket_id": null,
+            "url": "https://www.cardmarket.com/en/Magic/Products/Sealed/Double-Masters-2022-Draft-Booster-Box"
+        },
+        {
+            "name": "Ravnica Remastered Draft Booster Box",
+            "cardmarket_id": null,
+            "url": "https://www.cardmarket.com/en/Magic/Products/Sealed/Ravnica-Remastered-Draft-Booster-Box"
+        },
+        {
+            "name": "Tarkir: Dragonstorm Play Booster Box",
+            "cardmarket_id": null,
+            "url": "https://www.cardmarket.com/en/Magic/Products/Sealed/Tarkir-Dragonstorm-Play-Booster-Box"
+        },
+        {
+            "name": "Innistrad Remastered Play Booster Box",
+            "cardmarket_id": null,
+            "url": "https://www.cardmarket.com/en/Magic/Products/Sealed/Innistrad-Remastered-Play-Booster-Box"
+        },
+        {
+            "name": "Bloomburrow Play Booster Box",
+            "cardmarket_id": null,
+            "url": "https://www.cardmarket.com/en/Magic/Products/Sealed/Bloomburrow-Play-Booster-Box"
+        }
+    ]
+}
